@@ -15,12 +15,17 @@ export class AuthService {
 
   login(payload: { identifier: string; password: string }): Observable<any> {
     return this.http.post<any>(this.apiUrl, payload).pipe(
-      tap(res => {
-        if (isPlatformBrowser(this.platformId) && res.success && res.data?.access) {
-          localStorage.setItem('access_token', res.data.access);
-          localStorage.setItem('refresh_token', res.data.refresh);
-        }
-      })
+  tap(res => {
+  if (!isPlatformBrowser(this.platformId)) return;
+
+  if (!res?.access || !res?.refresh) {
+    console.error('Login response missing tokens:', res);
+    return;
+  }
+
+  localStorage.setItem('access_token', res.access);
+  localStorage.setItem('refresh_token', res.refresh);
+})
     );
   }
 
@@ -33,6 +38,7 @@ export class AuthService {
 
 logout(): Observable<any> {
   const accessToken = this.getAccessToken();
+  console.log('Access Token during logout:', accessToken);
   const refreshToken = isPlatformBrowser(this.platformId)
     ? localStorage.getItem('refresh_token')
     : null;
