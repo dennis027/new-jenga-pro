@@ -1,1 +1,312 @@
-<p>jenga-dash works!</p>
+<!-- supervisor-dash.component.html -->
+
+<!-- Hidden menu trigger for AppBar action button -->
+<button 
+  #accountMenuTrigger="matMenuTrigger"
+  [matMenuTriggerFor]="accountMenu"
+  style="display: none;">
+</button>
+
+<!-- Account Menu -->
+<mat-menu #accountMenu="matMenu" xPosition="before">
+  <button mat-menu-item (click)="goToProfile()">
+    <mat-icon>person</mat-icon>
+    <span>Manage Account</span>
+  </button>
+  <mat-divider></mat-divider>
+  <button mat-menu-item (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    <span>Logout</span>
+  </button>
+</mat-menu>
+
+<div class="page">
+  
+  @if (isMobile()) { 
+    <br><br>
+    
+    <!-- Header Card -->
+    <section class="card header-card">
+      <div class="header-content">
+        <img 
+          [src]="imgFile ? imgUrl + imgFile : 'assets/user.png'" 
+          alt="Profile" 
+          class="profile-avatar"
+        />
+        <div class="header-text">
+          <h2>Hello, {{ fullname }}!</h2>
+          <p>{{ email }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Stats Card -->
+    <section class="card stats-card">
+      <div class="stat-row">
+        <i class="material-icons teal"></i>
+        <span class="label">Total Gigs</span>
+        <span class="value">{{ totalGigs }}</span>
+      </div>
+      <div class="divider"></div>
+      <div class="stat-row">
+        <i class="material-icons red">warning_amber</i>
+        <span class="label">Unverified Gigs</span>
+        <span class="value">{{ unverifiedGigs }}</span>
+      </div>
+      
+    </section>
+
+    <!-- Mobile Activity Calendar -->
+    <section class="card activity-card">
+      <h3>📊 Recent Activity</h3>
+      <div class="mobile-calendar">
+        @for (day of last7Days; track day.date) {
+          <div class="calendar-day" 
+               [class.has-activity]="day.gigs > 0"
+               [class.no-activity]="day.gigs === 0">
+            <span class="day-name">{{ day.dayName }}</span>
+            <span class="day-number">{{ day.dayNum }}</span>
+            <span class="day-count">{{ day.gigs }}</span>
+          </div>
+        }
+      </div>
+      <div class="activity-summary">
+        <div class="summary-item">
+          <i class="material-icons">check_circle</i>
+          <span>{{ verifiedThisWeek }} verified</span>
+        </div>
+        <div class="summary-item">
+          <i class="material-icons">schedule</i>
+          <span>{{ unverifiedGigs }} pending</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Action Cards Grid -->
+    <section class="mobile-actions">
+      <div class="action-card" (click)="navigate('/main-menu/gig-list')">
+        <i class="material-icons">verified</i>
+        <span>All Gigs</span>
+      </div>
+      <div class="action-card" (click)="navigate('/main-menu/verify-gig')">
+        <i class="material-icons">list_alt</i>
+        <span>Verify Gigs</span>
+      </div>
+      <div class="action-card" (click)="navigate('/main-menu/manage-worker')">
+        <i class="material-icons">supervised_user_circle</i>
+        <span>Manage Workers</span>
+      </div>
+      <div class="action-card" (click)="navigate('/main-menu/reports')">
+        <i class="material-icons">bar_chart</i>
+        <span>Reports</span>
+      </div>
+      <div class="action-card" (click)="navigate('/main-menu/gig-types')">
+        <i class="material-icons">add</i>
+        <span>Add Gig Type</span>
+      </div>
+      <div class="action-card" (click)="navigate('/main-menu/organization')">
+        <i class="material-icons">business</i>
+        <span>Add Site</span>
+      </div>
+      <div class="action-card" (click)="navigate('/main-menu/mpesa')">
+        <i class="material-icons">credit_card</i>
+        <span>Mpesa Payment</span>
+      </div>
+      <div class="action-card" (click)="navigate('/main-menu/analytics')">
+        <i class="material-icons">analytics</i>
+        <span>Analytics</span>
+      </div>
+    </section>
+  }
+
+  <!-- Desktop Analytics Dashboard -->
+  @if (!isMobile()) {
+    <!-- Desktop Header -->
+    <div class="desktop-header">
+      <h1>Supervisor Dashboard</h1>
+      <p>Manage your construction sites and workers</p>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <!-- Total Gigs -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon bg-blue">
+            <i class="material-icons">assignment_outlined</i>
+          </div>
+        </div>
+        <h3>Total Gigs</h3>
+        <p class="stat-value">{{ totalGigs }}</p>
+        <p class="stat-subtitle">All time</p>
+      </div>
+
+      <!-- Unverified Gigs -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon bg-orange">
+            <i class="material-icons">warning_amber</i>
+          </div>
+        </div>
+        <h3>Unverified Gigs</h3>
+        <p class="stat-value">{{ unverifiedGigs }}</p>
+        <p class="stat-subtitle">Pending verification</p>
+      </div>
+
+      <!-- Active Workers -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon bg-green">
+            <i class="material-icons">people</i>
+          </div>
+        </div>
+        <h3>Active Workers</h3>
+        <p class="stat-value">{{ activeWorkers }}</p>
+        <p class="stat-subtitle">This month</p>
+      </div>
+
+      <!-- Active Sites -->
+      <div class="stat-card">
+        <div class="stat-header">
+          <div class="stat-icon bg-purple">
+            <i class="material-icons">location_city</i>
+          </div>
+        </div>
+        <h3>Active Sites</h3>
+        <p class="stat-value">{{ activeSites }}</p>
+        <p class="stat-subtitle">Ongoing projects</p>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="desktop-grid">
+      <!-- Recent Gigs -->
+      <div class="desktop-card recent-gigs">
+        <div class="card-header">
+          <h2>Recent Gigs</h2>
+          <button class="view-all-btn" (click)="navigate('/main-menu/gig-list')">View All</button>
+        </div>
+        <div class="gigs-list">
+          @for (gig of recentGigs; track gig.id) {
+            <div class="gig-item">
+              <div class="gig-main">
+                <div class="gig-info">
+                  <h3>{{ gig.workerName }}</h3>
+                  <p>{{ gig.siteName }} • {{ gig.jobType }}</p>
+                </div>
+                <span class="gig-date">{{ gig.date }}</span>
+              </div>
+              <div class="gig-footer">
+                <span class="status-badge" [class.verified]="gig.verified" [class.pending]="!gig.verified">
+                  <i class="material-icons">{{ gig.verified ? 'verified' : 'schedule' }}</i>
+                  {{ gig.verified ? 'Verified' : 'Pending' }}
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Activity Overview -->
+      <div class="desktop-card">
+        <div class="card-header">
+          <h2>Activity Overview</h2>
+        </div>
+        <div class="activity-content">
+          <!-- Weekly Summary -->
+          <div class="weekly-chart">
+            <h3>This Week</h3>
+            <div class="chart-bars">
+              @for (day of weeklyData; track day.day) {
+                <div class="bar-container">
+                  <div class="bar" [style.height.%]="(day.gigs / maxWeeklyGigs) * 100"></div>
+                  <span class="bar-label">{{ day.day }}</span>
+                  <span class="bar-value">{{ day.gigs }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="quick-stats">
+            <div class="quick-stat-item">
+              <i class="material-icons">check_circle</i>
+              <div>
+                <span class="stat-num">{{ verifiedThisWeek }}</span>
+                <span class="stat-label">Verified this week</span>
+              </div>
+            </div>
+            <div class="quick-stat-item">
+              <i class="material-icons">trending_up</i>
+              <div>
+                <span class="stat-num">{{ verificationRate }}%</span>
+                <span class="stat-label">Verification rate</span>
+              </div>
+            </div>
+            <div class="quick-stat-item">
+              <i class="material-icons">schedule</i>
+              <div>
+                <span class="stat-num">{{ avgVerificationTime }}h</span>
+                <span class="stat-label">Avg. verification time</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Grid -->
+    <div class="bottom-grid">
+      <!-- Sites Performance -->
+      <div class="desktop-card">
+        <div class="card-header">
+          <h2>Sites Performance</h2>
+        </div>
+        <div class="sites-list">
+          @for (site of topSites; track site.id) {
+            <div class="site-item">
+              <div class="site-info">
+                <div class="site-icon">
+                  <i class="material-icons">business</i>
+                </div>
+                <div>
+                  <h4>{{ site.name }}</h4>
+                  <p>{{ site.workers }} workers • {{ site.gigs }} gigs</p>
+                </div>
+              </div>
+              <div class="site-progress">
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="site.completion"></div>
+                </div>
+                <span class="progress-label">{{ site.completion }}%</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Top Workers -->
+      <div class="desktop-card">
+        <div class="card-header">
+          <h2>Top Workers (This Month)</h2>
+        </div>
+        <div class="workers-list">
+          @for (worker of topWorkers; track worker.id) {
+            <div class="worker-item">
+              <div class="worker-rank">{{ worker.rank }}</div>
+              <img [src]="worker.avatar || 'assets/user.png'" alt="Worker" class="worker-avatar">
+              <div class="worker-info">
+                <h4>{{ worker.name }}</h4>
+                <p>{{ worker.gigs }} gigs completed</p>
+              </div>
+              <div class="worker-rating">
+                <i class="material-icons">star</i>
+                <span>{{ worker.rating }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

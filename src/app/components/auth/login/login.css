@@ -1,66 +1,199 @@
-.login-container {
-  width: 320px;
-  margin: 80px auto;
-  padding: 25px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  font-family: Arial, sans-serif;
+/* Page center */
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
+/* Card */
+.login-container {
+  width: 360px;
+  padding: 32px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: fadeUp 0.6s ease;
+}
+
+/* Headings */
 h2 {
   text-align: center;
-  margin-bottom: 20px;
-  color: #333;
+  margin-bottom: 6px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #111;
 }
 
+.subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 24px;
+}
+
+/* Inputs */
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 16px;
 }
 
 label {
-  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
   margin-bottom: 6px;
-  font-size: 14px;
-  color: #555;
+  display: block;
 }
 
 input {
   width: 100%;
-  padding: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
   border: 1px solid #ddd;
-  border-radius: 6px;
   font-size: 14px;
+  transition: border 0.25s ease, box-shadow 0.25s ease;
 }
 
+input:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.15);
+}
+
+/* Password eye */
+.password-wrapper {
+  position: relative;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 20px;
+  color: #777;
+}
+
+/* Actions row */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  font-size: 13px;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #555;
+}
+
+.link {
+  color: #1976d2;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+/* Button */
 button {
   width: 100%;
-  padding: 10px;
-  background: #1976d2;
+  padding: 12px;
+  border-radius: 12px;
   border: none;
-  border-radius: 6px;
+  background: linear-gradient(135deg, #1976d2, #42a5f5);
   color: white;
-  font-size: 16px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(25, 118, 210, 0.3);
 }
 
 button:disabled {
-  background: #90caf9;
+  opacity: 0.7;
   cursor: not-allowed;
 }
 
+/* Loader */
 .loader {
-  border: 3px solid #f3f3f3;
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(255, 255, 255, 0.4);
   border-top: 3px solid white;
   border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  display: inline-block;
   animation: spin 1s linear infinite;
+  margin: auto;
 }
 
+/* Divider */
+.divider {
+  margin: 22px 0;
+  text-align: center;
+  position: relative;
+}
+
+.divider span {
+  background: #fff;
+  padding: 0 12px;
+  color: #999;
+  font-size: 12px;
+}
+
+.divider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: #e0e0e0;
+  z-index: -1;
+}
+
+/* Register */
+.register-text {
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+}
+
+.register-text a {
+  color: #1976d2;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.register-text a:hover {
+  text-decoration: underline;
+}
+
+/* Animations */
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

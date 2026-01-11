@@ -1,23 +1,70 @@
-<div class="login-container">
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    <h2>Login</h2>
+<div class="login-wrapper">
+  <div class="login-container">
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
 
-    <div class="form-group">
-      <label for="identifier">Username or Email</label>
-      <input id="username" type="text" formControlName="username" required>
-    </div>
+      <h2>Welcome Back 👋</h2>
+      <p class="subtitle">Login to continue to <strong>FundiPro</strong></p>
 
-    <div class="form-group">
-      <label for="password">Password</label>
-      <input id="password" type="password" formControlName="password" required>
-    </div>
+      <!-- Username -->
+      <div class="form-group">
+        <label>Username or Email</label>
+        <input
+          type="text"
+          formControlName="username"
+          placeholder="Enter your username or email"
+        />
+      </div>
 
-    <button type="submit" [disabled]="loading()">
-      @if (!loading()) {
-        <span>Login</span>
-      } @else {
-        <span class="loader"></span>
-      }
-    </button>
-  </form>
+      <!-- Password -->
+      <div class="form-group">
+        <label>Password</label>
+        <div class="password-wrapper">
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Enter your password"
+          />
+          <span
+            class="toggle-password material-symbols-outlined"
+            (click)="togglePassword()"
+          >
+            {{ showPassword() ? 'visibility_off' : 'visibility' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Actions row -->
+      <div class="form-actions">
+        <label class="remember">
+          <input type="checkbox" formControlName="rememberMe" />
+          Remember me
+        </label>
+
+        <a class="link" (click)="onForgotPassword($event)">
+          Forgot password?
+        </a>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" [disabled]="loading()">
+        @if (!loading()) {
+          Login
+        } @else {
+          <span class="loader"></span>
+        }
+      </button>
+
+      <!-- Divider -->
+      <div class="divider">
+        <span>OR</span>
+      </div>
+
+      <!-- Register -->
+      <p class="register-text">
+        Don’t have an account?
+        <a routerLink="/register">Register here</a>
+      </p>
+
+    </form>
+  </div>
 </div>

@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FundiDash } from './fundi-dash';
+import { MobileAppBar } from './mobile-app-bar';
 
-describe('FundiDash', () => {
-  let component: FundiDash;
-  let fixture: ComponentFixture<FundiDash>;
+describe('MobileAppBar', () => {
+  let component: MobileAppBar;
+  let fixture: ComponentFixture<MobileAppBar>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FundiDash]
+      imports: [MobileAppBar]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(FundiDash);
+    fixture = TestBed.createComponent(MobileAppBar);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

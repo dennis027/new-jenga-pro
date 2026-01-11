@@ -1,0 +1,167 @@
+
+.mobile-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100% !important;
+  height: 56px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  animation: slideDown 0.3s ease-out;
+}
+
+/* Ensure content below navbar doesn't get hidden */
+body {
+  padding-top: 56px;
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  margin: 0;
+  cursor: pointer;
+  color: #1565C0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.15s ease;
+  min-width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.back-btn:hover {
+  background-color: #E3F2FD;
+}
+
+.back-btn:active {
+  background-color: #BBDEFB;
+  transform: scale(0.95);
+}
+
+.back-icon {
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 600;
+  user-select: none;
+}
+
+.title {
+  font-weight: bold;
+  font-size: 20px;
+  color: #1565C0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.nav-action {
+  background: none;
+  border: none;
+  padding: 8px;
+  margin: 0;
+  cursor: pointer;
+  color: #1565C0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.15s ease;
+  min-width: 40px;
+  height: 40px;
+  font-size: 20px;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-action:hover {
+  background-color: #E3F2FD;
+}
+
+.nav-action:active {
+  background-color: #BBDEFB;
+  transform: scale(0.95);
+}
+
+/* Icon styling for better visibility */
+.nav-action svg,
+.back-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Emoji icons */
+.nav-action span {
+  font-size: 20px;
+  line-height: 1;
+  display: block;
+  user-select: none;
+}
+
+/* Smooth slide-down animation */
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .mobile-bar {
+    padding: 0 12px;
+  }
+  
+  .title {
+    font-size: 18px;
+  }
+}
+
+/* Prevent content shift when navbar appears */
+@media (min-width: 769px) {
+  body {
+    padding-top: 0;
+  }
+}
+
+.material-symbols-outlined{
+    font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 48;
+    margin: 15px;
+    font-size: larger;
+}

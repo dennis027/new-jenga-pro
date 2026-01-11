@@ -1,47 +1,35 @@
-<!-- Mobile navbar -->
-<nav class="mobile-navbar">
-  <button class="menu-toggle" (click)="toggleSidebar()">
-    <i class="fas fa-bars"></i>
-  </button>
-  <div class="brand">Jenga Pro</div>
-</nav>
 
-<!-- Sidebar overlay -->
-<div class="sidebar-overlay" (click)="closeSidebar()"></div>
 
-<div class="dashboard-wrapper d-flex">
-  <!-- Sidebar -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <h2>Jenga Pro</h2>
-    </div>
+<!-- APP LAYOUT -->
+<div class="app-layout">
 
-    <ul class="nav-menu">
-      <li class="nav-item" *ngFor="let link of links">
-        <a 
-          class="nav-link" 
-          [routerLink]="link.route" 
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: false }"
-          (click)="onNavLinkClick()">
-          <i [class]="link.icon"></i> {{ link.name }}
-        </a>
-      </li>
-    </ul>
+  <!-- SIDEBAR / DRAWER -->
+  <aside class="sidebar" [class.open]="sidebarOpen">
+    <div class="sidebar-header">Fundi Pro</div>
 
-    <!-- Logout button -->
-    <div class="logout-section">
-      <button class="logout-btn" (click)="logOut()"> 
-        <i class="fas fa-sign-out-alt"></i>
-        Logout
-      </button>
-    </div>
+  <nav class="nav-menu">
+    <a 
+      *ngFor="let link of links; let i = index" 
+      [routerLink]="link.route"
+      routerLinkActive="active"
+      [routerLinkActiveOptions]="{ exact: i === 0 }"
+      (click)="onNavLinkClick()">  
+      <i [class]="link.icon"></i>
+      <span>{{ link.name }}</span> 
+    </a>
+  </nav>
+
+    <button class="logout-btn" (click)="logOut()">
+      <i class="fas fa-sign-out-alt"></i>
+      Logout
+    </button>
   </aside>
 
-  <!-- Main content -->
-  <main class="main-content" style="width: 100%;">
-
+  <!-- MAIN CONTENT -->
+  <main class="content">
+    <app-mobile-app-bar></app-mobile-app-bar>
     <router-outlet></router-outlet>
   </main>
+
 </div>
  

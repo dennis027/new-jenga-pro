@@ -1,0 +1,31 @@
+@if (isMobile()) {
+  <header class="mobile-bar">
+    <div class="nav-left">
+      @if (appBar.showBack()) {
+        <button
+          class="back-btn"
+          (click)="goBack()"
+          aria-label="Go back"
+        >
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+      }
+
+      <h1 class="title">{{ appBar.title() }}</h1>
+    </div>
+
+    <div class="nav-right">
+      @for (action of appBar.actions(); track action.id) {
+        <button
+          class="nav-action"
+          [attr.aria-label]="action.ariaLabel"
+          (click)="action.onClick()"
+        >
+          <span class="material-symbols-outlined">
+            {{ action.icon }}
+          </span>
+        </button>
+      }
+    </div>
+  </header>
+}

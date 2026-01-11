@@ -1,0 +1,44 @@
+<div class="login-wrapper">
+  <div class="card">
+
+    <!-- Status Icon -->
+    <span class="material-symbols-outlined status-icon" 
+          [class.success]="!isError()" 
+          [class.error]="isError()">
+      {{ isError() ? 'error_outline' : 'mark_email_read' }}
+    </span>
+
+    <!-- Title -->
+    <h2>
+      {{ isError() ? 'Email Not Verified ❌' : 'Check Your Email 🎉' }}
+    </h2>
+
+    <!-- Message -->
+    <p class="message">
+      {{ message() }}
+      <br *ngIf="email()" />
+      <small *ngIf="email()">Sent to: {{ email() }}</small>
+    </p>
+
+    <!-- Resend button only if email not verified -->
+
+
+    <div class="actions-row">
+    <!-- Resend button only if email not verified -->
+    <button 
+        class="secondary" 
+        *ngIf="isError()" 
+        (click)="resendEmail()"
+    >
+        Resend Email
+    </button>
+
+    <!-- Login button -->
+    <button class="primary" (click)="goToLogin()">
+        Go to Login
+    </button>
+    </div>
+
+
+  </div>
+</div>

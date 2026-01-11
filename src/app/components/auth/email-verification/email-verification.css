@@ -1,0 +1,220 @@
+/* Same background as login/register */
+.login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Card */
+.success-card {
+  width: 380px;
+  background: #fff;
+  padding: 36px 32px;
+  border-radius: 18px;
+  text-align: center;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  animation: fadeUp 0.6s ease;
+}
+
+/* Icon */
+.success-icon {
+  font-size: 64px;
+  color: #4caf50;
+  margin-bottom: 16px;
+}
+
+/* Text */
+h2 {
+  font-size: 22px;
+  margin-bottom: 10px;
+  color: #111;
+}
+
+.message {
+  font-size: 15px;
+  color: #444;
+  margin-bottom: 12px;
+}
+
+.hint {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 24px;
+}
+
+/* Buttons */
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button.primary {
+  background: linear-gradient(135deg, #1976d2, #42a5f5);
+  color: white;
+}
+
+button.secondary {
+  background: #f1f3f4;
+  color: #333;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Animation */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.verification-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  font-family: 'Arial', sans-serif;
+  background: #f5f7fa;
+  padding: 20px;
+}
+
+.card {
+  background: #fff;
+  padding: 35px 25px;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.status-icon {
+  font-size: 50px;
+  display: block;
+  margin: 0 auto 15px;
+}
+
+.status-icon.success {
+  color: #4caf50; /* green for success */
+}
+
+.status-icon.error {
+  color: #f44336; /* red for error */
+}
+
+h2 {
+  font-size: 22px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.message {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button.primary {
+  background-color: #1976d2;
+  color: #fff;
+}
+
+button.primary:hover {
+  background-color: #1565c0;
+}
+
+button.secondary {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+button.secondary:hover {
+  background-color: #d5d5d5;
+}
+
+/* Responsive tweaks */
+@media (max-width: 480px) {
+  .card {
+    padding: 25px 15px;
+  }
+
+  .status-icon {
+    font-size: 45px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  .message {
+    font-size: 14px;
+  }
+}
+
+.actions-row {
+  display: flex;
+  justify-content: flex-end; /* Align buttons to right, can use space-between */
+  gap: 12px; /* Space between buttons */
+  margin-top: 1.5rem;
+}
+
+button.primary {
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button.secondary {
+  background-color: #e0e0e0;
+  color: #333;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
