@@ -1,7 +1,6 @@
 * {
   box-sizing: border-box;
   font-family: Inter, sans-serif;
-  width: 100%;
 }
 
 body {
@@ -27,11 +26,13 @@ body {
   background: none;
   border: none;
   font-size: 1.4rem;
+  width: auto;
 }
 
 .title {
   font-weight: 700;
   font-size: 1.2rem;
+  width: auto;
 }
 
 /* LAYOUT */
@@ -61,6 +62,7 @@ body {
   padding: 1.5rem;
   font-weight: 800;
   font-size: 1.3rem;
+  width: 100%;
 }
 
 /* NAV */
@@ -68,6 +70,7 @@ body {
   display: flex;
   flex-direction: column;
   padding: .5rem;
+  width: 100%;
 }
 
 .nav-menu a {
@@ -78,6 +81,15 @@ body {
   border-radius: 10px;
   color: #444;
   text-decoration: none;
+  width: 100%;
+}
+
+.nav-menu a i {
+  width: auto;
+}
+
+.nav-menu a span {
+  width: auto;
 }
 
 .nav-menu a.active {
@@ -85,21 +97,34 @@ body {
   color: white;
 }
 
-/* LOGOUT */
+/* LOGOUT - HIDDEN ON MOBILE */
 .logout-btn {
+  display: none;
   margin: auto 1rem 1rem;
   padding: .8rem;
   border-radius: 10px;
   border: none;
   background: #e74c3c;
   color: white;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  width: calc(100% - 2rem);
+}
+
+.logout-btn i {
+  width: auto;
+}
+
+.logout-btn span {
+  width: auto;
 }
 
 /* CONTENT */
 .content {
   flex: 1;
   padding: 1rem;
-  /* margin-top: 56px; */
+  width: 100%;
 }
 
 /* OVERLAY */
@@ -128,6 +153,11 @@ body {
     position: relative;
     transform: none;
     width: 280px;
+  }
+
+  /* SHOW LOGOUT ON DESKTOP */
+  .logout-btn {
+    display: flex;
   }
 
   .overlay {

@@ -1,5 +1,3 @@
-
-
 <!-- APP LAYOUT -->
 <div class="app-layout">
 
@@ -7,21 +5,22 @@
   <aside class="sidebar" [class.open]="sidebarOpen">
     <div class="sidebar-header">Fundi Pro</div>
 
-  <nav class="nav-menu">
-    <a 
-      *ngFor="let link of links; let i = index" 
-      [routerLink]="link.route"
-      routerLinkActive="active"
-      [routerLinkActiveOptions]="{ exact: i === 0 }"
-      (click)="onNavLinkClick()">  
-      <i [class]="link.icon"></i>
-      <span>{{ link.name }}</span> 
-    </a>
-  </nav>
+    <nav class="nav-menu">
+      <a 
+        *ngFor="let link of links; let i = index" 
+        [routerLink]="link.route"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: i === 0 }"
+        (click)="onNavLinkClick()">  
+        <i [class]="link.icon"></i>
+        <span>{{ link.name }}</span> 
+      </a>
+    </nav>
 
+    <!-- Logout button - hidden on mobile -->
     <button class="logout-btn" (click)="logOut()">
       <i class="fas fa-sign-out-alt"></i>
-      Logout
+      <span>Logout</span>
     </button>
   </aside>
 
@@ -32,4 +31,3 @@
   </main>
 
 </div>
- 
