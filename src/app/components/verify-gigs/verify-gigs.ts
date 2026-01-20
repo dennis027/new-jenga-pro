@@ -1,8 +1,15 @@
-// verify-gigs.component.ts
-
-import { Component, signal, afterNextRender, inject, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  signal,
+  afterNextRender,
+  inject,
+  OnInit,
+  OnDestroy,
+  PLATFORM_ID,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AppBarService } from '../../services/app-bar-service';
+import { Inject } from '@angular/core';
 
 interface Gig {
   id: number;
@@ -25,107 +32,108 @@ interface Gig {
   styleUrls: ['./verify-gigs.css'],
 })
 export class VerifyGigs implements OnInit, OnDestroy {
+
+  // signals
   isMobile = signal(false);
+
+  // services
   private appBar = inject(AppBarService);
 
-  isLoading: boolean = true;
+  // platform
+  private isBrowser: boolean;
+
+  // state
+  isLoading = false;
   unverifiedGigs: Gig[] = [];
 
-  constructor() {
-    afterNextRender(() => {
-      this.checkScreen();
-      window.addEventListener('resize', () => this.checkScreen());
-    });
-  }
+  // keep reference so we can remove it
+  private resizeHandler = () => this.checkScreen();
 
-  private checkScreen(): void {
-    this.isMobile.set(window.innerWidth < 992);
+  constructor(
+    @Inject(PLATFORM_ID) platformId: Object
+  ) {
+    // ✅ SAFE platform check
+    this.isBrowser = isPlatformBrowser(platformId);
+
+    // ✅ ONLY run browser logic in browser
+    if (this.isBrowser) {
+      afterNextRender(() => {
+        this.checkScreen();
+        window.addEventListener('resize', this.resizeHandler);
+      });
+    }
   }
 
   ngOnInit(): void {
     this.appBar.setTitle('Verify Gigs');
     this.appBar.setBack(true);
 
-    setTimeout(() => {
     this.fetchUnverifiedGigs();
-    },)
   }
 
-  async fetchUnverifiedGigs(): Promise<void> {
+  private checkScreen(): void {
+    if (!this.isBrowser) return;
+    this.isMobile.set(window.innerWidth < 992);
+  }
+
+  fetchUnverifiedGigs(): void {
     this.isLoading = true;
 
-    // TODO: Replace with actual API call
-    // const token = localStorage.getItem('access_token');
-    // const response = await fetch(`${API_URL}/user-gigs-list/`, {
-    //   headers: { 'Authorization': `Bearer ${token}` }
-    // });
-    // const gigs = await response.json();
-    // this.unverifiedGigs = gigs.filter(g => !g.is_verified);
+    // 🔧 MOCK DATA (replace with API later)
+    this.unverifiedGigs = [
+      {
+        id: 1,
+        client_name: 'John Mwangi',
+        client_phone: '+254 712 345 678',
+        ward: 'Parklands',
+        constituency: 'Westlands',
+        county: 'Nairobi',
+        start_date: '2026-01-15',
+        duration_value: 3,
+        duration_unit: 'days',
+        is_verified: false,
+      },
+      {
+        id: 2,
+        client_name: 'Mary Njeri',
+        client_phone: '+254 723 456 789',
+        ward: 'Kilimani',
+        constituency: 'Dagoretti North',
+        county: 'Nairobi',
+        start_date: '2026-01-16',
+        duration_value: 5,
+        duration_unit: 'days',
+        is_verified: false,
+      },
+      {
+        id: 3,
+        client_name: 'Peter Omondi',
+        client_phone: '+254 734 567 890',
+        ward: 'Karen',
+        constituency: 'Langata',
+        county: 'Nairobi',
+        start_date: '2026-01-18',
+        duration_value: 1,
+        duration_unit: 'week',
+        is_verified: false,
+      },
+    ];
 
-    // Mock data
-    setTimeout(() => {
-      this.unverifiedGigs = [
-        {
-          id: 1,
-          client_name: 'John Mwangi',
-          client_phone: '+254 712 345 678',
-          ward: 'Parklands',
-          constituency: 'Westlands',
-          county: 'Nairobi',
-          start_date: '2026-01-15',
-          duration_value: 3,
-          duration_unit: 'days',
-          is_verified: false
-        },
-        {
-          id: 2,
-          client_name: 'Mary Njeri',
-          client_phone: '+254 723 456 789',
-          ward: 'Kilimani',
-          constituency: 'Dagoretti North',
-          county: 'Nairobi',
-          start_date: '2026-01-16',
-          duration_value: 5,
-          duration_unit: 'days',
-          is_verified: false
-        },
-        {
-          id: 3,
-          client_name: 'Peter Omondi',
-          client_phone: '+254 734 567 890',
-          ward: 'Karen',
-          constituency: 'Lang\'ata',
-          county: 'Nairobi',
-          start_date: '2026-01-18',
-          duration_value: 1,
-          duration_unit: 'week',
-          is_verified: false
-        }
-      ];
-      this.isLoading = false;
-    }, 2000);
+    this.isLoading = false;
   }
 
-  async verifyGig(gigId: number): Promise<void> {
-    // TODO: Replace with actual API call
-    // const token = localStorage.getItem('access_token');
-    // await fetch(`${API_URL}/gigs/verify/${gigId}/`, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${token}`,
-    //     'Content-Type': 'application/json'
-    //   },
-    //   body: JSON.stringify({ is_verified: true })
-    // });
+  verifyGig(gigId: number): void {
+    this.unverifiedGigs = this.unverifiedGigs.filter(
+      gig => gig.id !== gigId
+    );
 
-    // Mock verification
-    this.unverifiedGigs = this.unverifiedGigs.filter(g => g.id !== gigId);
-    
-    // Show success message (you can use a snackbar service)
-    console.log('Gig verified successfully!');
+    console.log(`Gig ${gigId} verified`);
   }
 
   ngOnDestroy(): void {
+    if (this.isBrowser) {
+      window.removeEventListener('resize', this.resizeHandler);
+    }
     this.appBar.clearActions();
   }
 }
