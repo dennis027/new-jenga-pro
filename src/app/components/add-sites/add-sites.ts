@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SitesService } from '../../services/sites-service';
 import { AppBarService } from '../../services/app-bar-service';
 import regionsData from '../../../assets/JSON-Files/regions.json';
+import { Router } from '@angular/router';
 
 interface Site {
   id?: number;
@@ -18,6 +19,17 @@ interface Site {
   owner?: number;
 }
 
+interface Constituency {
+  constituency_name: string;
+  wards: string[];
+}
+
+interface County {
+  county_code: number;
+  county_name: string;
+  constituencies: Constituency[];
+}
+
 @Component({
   selector: 'app-add-sites',
   standalone: true,
@@ -28,6 +40,9 @@ interface Site {
 export class AddSites {
   private siteService = inject(SitesService);
   private appBar = inject(AppBarService);
+  private router = inject(Router);
+  private platformId = inject(PLATFORM_ID);
+  private cdr = inject(ChangeDetectorRef); // Injected to fix NG0100
 
   sites: Site[] = [];
   loading = true;
@@ -37,6 +52,11 @@ export class AddSites {
   showDialog = false;
   dialogMode: 'add' | 'edit' = 'add';
   saving = false;
+  
+  // Region data
+  counties: County[] = regionsData as County[];
+  availableConstituencies: Constituency[] = [];
+  availableWards: string[] = [];
   
   // Form data
   formData: Site = {
@@ -56,14 +76,6 @@ export class AddSites {
 
     this.appBar.setActions([
       {
-        id: 'add-site',
-        icon: 'add',
-        ariaLabel: 'Add Site',
-        onClick: () => {
-          this.openAddDialog();
-        },
-      },
-      {
         id: 'refresh',
         icon: 'refresh',
         ariaLabel: 'Refresh Sites',
@@ -73,26 +85,62 @@ export class AddSites {
       }
     ]);
 
-    this.loadSites();
-    console.log('Regions data:', regionsData);
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadSites();
+    }
   }
 
   loadSites() {
     this.loading = true;
     this.error = null;
     
+    // Explicitly trigger change detection because we are 
+    // changing 'loading' during the lifecycle check.
+    this.cdr.detectChanges();
+
     this.siteService.getUserSites().subscribe({
       next: (data) => {
-        console.log('Sites data:', data);
         this.sites = data;
         this.loading = false;
+        this.cdr.detectChanges(); // Ensure UI updates when data arrives
       },
       error: (err) => {
         console.error('Error loading sites:', err);
-        this.error = 'Failed to load sites. Please try again.';
         this.loading = false;
+        
+        if (err.status === 0) {
+          this.error = 'Network error: Please check your internet connection.';
+        } else if (err.status === 401) {
+          this.error = 'Unauthorized: Please log in again.';
+          this.router.navigate(['/login']);
+        } else {
+          this.error = 'Failed to load sites. Please try again.';
+        }
+        this.cdr.detectChanges();
       }
     });
+  }
+
+  onCountyChange() {
+    this.formData.constituency = '';
+    this.formData.ward = '';
+    this.availableWards = [];
+    
+    const selectedCounty = this.counties.find(
+      county => county.county_name === this.formData.county
+    );
+    
+    this.availableConstituencies = selectedCounty ? selectedCounty.constituencies : [];
+  }
+
+  onConstituencyChange() {
+    this.formData.ward = '';
+    
+    const selectedConstituency = this.availableConstituencies.find(
+      constituency => constituency.constituency_name === this.formData.constituency
+    );
+    
+    this.availableWards = selectedConstituency ? selectedConstituency.wards : [];
   }
 
   openAddDialog() {
@@ -106,34 +154,34 @@ export class AddSites {
       constituency: '',
       ward: ''
     };
+    this.availableConstituencies = [];
+    this.availableWards = [];
     this.showDialog = true;
   }
 
   openEditDialog(site: Site) {
     this.dialogMode = 'edit';
     this.editingSiteId = site.id || null;
-    this.formData = {
-      name: site.name,
-      description: site.description,
-      phone_number: site.phone_number,
-      county: site.county,
-      constituency: site.constituency,
-      ward: site.ward
-    };
+    this.formData = { ...site }; // Shallow copy to avoid direct mutation
+    
+    const selectedCounty = this.counties.find(c => c.county_name === site.county);
+    if (selectedCounty) {
+      this.availableConstituencies = selectedCounty.constituencies;
+      const selectedConstituency = this.availableConstituencies.find(
+        c => c.constituency_name === site.constituency
+      );
+      if (selectedConstituency) {
+        this.availableWards = selectedConstituency.wards;
+      }
+    }
+    
     this.showDialog = true;
   }
 
   closeDialog() {
     this.showDialog = false;
-    this.formData = {
-      name: '',
-      description: '',
-      phone_number: '',
-      county: '',
-      constituency: '',
-      ward: ''
-    };
     this.editingSiteId = null;
+    this.cdr.detectChanges(); // Ensures the dialog DOM is cleaned up properly
   }
 
   saveSite() {
@@ -143,59 +191,37 @@ export class AddSites {
     }
 
     this.saving = true;
+    const payload = { ...this.formData };
 
-    const payload = {
-      name: this.formData.name.trim(),
-      description: this.formData.description.trim(),
-      phone_number: this.formData.phone_number.trim(),
-      county: this.formData.county.trim(),
-      constituency: this.formData.constituency.trim(),
-      ward: this.formData.ward.trim()
-    };
+    const request = this.dialogMode === 'add' 
+      ? this.siteService.addSite(payload)
+      : this.siteService.updateSite(this.editingSiteId!, payload);
 
-    if (this.dialogMode === 'add') {
-      this.siteService.addSite(payload).subscribe({
-        next: () => {
-          this.saving = false;
-          this.closeDialog();
-          this.loadSites();
-        },
-        error: (err) => {
-          console.error('Error adding site:', err);
-          alert('Failed to add site. Please try again.');
-          this.saving = false;
-        }
-      });
-    } else if (this.dialogMode === 'edit' && this.editingSiteId) {
-      this.siteService.updateSite(this.editingSiteId, payload).subscribe({
-        next: () => {
-          this.saving = false;
-          this.closeDialog();
-          this.loadSites();
-        },
-        error: (err) => {
-          console.error('Error updating site:', err);
-          alert('Failed to update site. Please try again.');
-          this.saving = false;
-        }
-      });
-    }
+    request.subscribe({
+      next: () => {
+        this.saving = false;
+        this.closeDialog();
+        this.loadSites();
+      },
+      error: (err) => {
+        console.error('Error saving site:', err);
+        alert('Failed to save site. Please try again.');
+        this.saving = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   handleDeleteSite(site: Site) {
-    if (!site.id) return;
+    if (!site.id || !confirm(`Are you sure you want to delete "${site.name}"?`)) return;
     
-    if (confirm(`Are you sure you want to delete "${site.name}"?`)) {
-      this.siteService.deleteSite(site.id).subscribe({
-        next: () => {
-          this.loadSites();
-        },
-        error: (err) => {
-          console.error('Error deleting site:', err);
-          alert('Failed to delete site. Please try again.');
-        }
-      });
-    }
+    this.siteService.deleteSite(site.id).subscribe({
+      next: () => this.loadSites(),
+      error: (err) => {
+        console.error('Error deleting site:', err);
+        alert('Failed to delete site.');
+      }
+    });
   }
 
   formatDate(dateString: string): string {

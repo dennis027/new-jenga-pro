@@ -1,34 +1,39 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
-import { isPlatformBrowser } from '@angular/common';
-import { HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { HttpContextToken, HttpContext } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root',
 })
 export class SitesService {
-  private apiUrl = environment.apiUrl+'api/';
-  constructor(private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object) {}
+  private apiUrl = environment.apiUrl + 'api/';
 
-  getSites(): Observable<any> {
-    return this.http.get<any>(this.apiUrl + 'organizations/');  
-  }
+  constructor(private http: HttpClient) {}
 
   getUserSites(): Observable<any> {
-    return this.http.get<any>(this.apiUrl + 'user-organizations/');  
+    return this.http.get<any>(
+      this.apiUrl + 'user-organizations/'
+    );
   }
 
-  addSite(payload:any): Observable<any> {
-    return this.http.post<any>(this.apiUrl + 'organizations/', payload);
+  addSite(payload: any): Observable<any> {
+    return this.http.post<any>(
+      this.apiUrl + 'organizations/',
+      payload
+    );
   }
-  updateSite(siteId: number, payload:any): Observable<any> {
-    return this.http.put<any>(this.apiUrl + `organization/${siteId}/`, payload);
+
+  updateSite(siteId: number, payload: any): Observable<any> {
+    return this.http.put<any>(
+      this.apiUrl + `organizations/${siteId}/`,
+      payload
+    );
   }
 
   deleteSite(siteId: number): Observable<any> {
-    return this.http.delete<any>(this.apiUrl + `organization/${siteId}/`);
+    return this.http.delete<any>(
+      this.apiUrl + `organizations/${siteId}/`
+    );
   }
 }
