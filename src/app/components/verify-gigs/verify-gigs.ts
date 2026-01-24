@@ -80,7 +80,7 @@ ngOnInit(): void {
     this.isLoading.set(true);
     this.gigService.getUnverifiedGigs().subscribe({
       next: (data) => {
-        this.unverifiedGigs.set(data);
+        this.unverifiedGigs.set(data.filter((gig: Gig) => !gig.is_verified));
         this.isLoading.set(false);
         console.log('Unverified gigs fetched', data);
       },

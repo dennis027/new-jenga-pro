@@ -1,12 +1,14 @@
 
-import { Component, signal, afterNextRender, inject, OnInit, OnDestroy, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, afterNextRender, inject, OnInit, OnDestroy, ViewChild, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { AppBarService } from '../../services/app-bar-service';
+import { UserService } from '../../services/user-service';
+import { TokenService } from '../../services/token-service';
 
 interface Gig {
   id: number;
@@ -67,6 +69,9 @@ export class JengaDash {
   isMobile = signal(false);
   private appBar = inject(AppBarService);
   private router = inject(Router);
+  private userService = inject(UserService);
+  private platformId = inject(PLATFORM_ID);
+  private tokenService = inject(TokenService);
 
   // User data
   username: string = '';
@@ -186,6 +191,31 @@ export class JengaDash {
 
     this.generateLast7Days();
     this.fetchSupervisorData();
+
+    if (isPlatformBrowser(this.platformId) && this.tokenService.isLoggedIn()) {
+      this.getLoggedInUser();
+  } else if (isPlatformBrowser(this.platformId)) {
+    // Optionally redirect to login
+    this.router.navigate(['/login']);
+  }
+  }
+
+  getLoggedInUser(): void { 
+    this.userService.getUserDetails().subscribe({
+      next: (data) => {
+        console.log('User profile data', data);
+        this.username = data.username;
+        this.fullname = data.full_name;
+        this.email = data.email;
+        this.imgFile = data.profile_image ? data.profile_image : '';
+      },
+      error: (err) => {
+        console.error('Error fetching user profile', err);
+        if (err.status === 401) {
+          this.router.navigate(['/login']);
+        }
+      }
+    }); 
   }
 
   // Generate last 7 days for mobile calendar
