@@ -15,29 +15,17 @@ export class GigServices {
 
   constructor(private http: HttpClient, @Inject(PLATFORM_ID) private platformId: Object) {}
 
-  getGigsAvailable(): Observable<any> {
-    return this.http.get<any>(this.apiUrl + 'gigs-available/'); 
+  getUnverifiedGigs(): Observable<any> {
+    return this.http.get<any>(
+      this.apiUrl + 'gigs-list/'
+    );
   }
 
-
-  addGig(payload:any): Observable<any> {
-    return this.http.post<any>(this.apiUrl + 'gigs/', payload);
-  }
-
-  userRelatedGigs(): Observable<any> {
-    return this.http.get<any>(this.apiUrl + 'user-gigs/');  
-  }
-
-  searchGigs(county: string, constituency: string, ward:string): Observable<any> {
-    return this.http.get<any>(this.apiUrl + `search-gigs/?county=${county}&constituency=${constituency}&ward=${ward}`); 
-  }
-  
-  completeGig(gigId: number): Observable<any> {
-    return this.http.post<any>(this.apiUrl + `gig/${gigId}/complete/`, {}); 
-  }
-
-  creditScoreHistory(): Observable<any> {
-    return this.http.get<any>(this.apiUrl + 'credit-history/'); 
+  verifyGig(gigId: number): Observable<any> {
+    return this.http.post<any>(
+      this.apiUrl + `/gigs/verify/${gigId}/`,
+      {}
+    );
   }
 }
 

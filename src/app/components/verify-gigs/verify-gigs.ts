@@ -10,6 +10,8 @@ import {
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AppBarService } from '../../services/app-bar-service';
 import { Inject } from '@angular/core';
+import { GigServices } from '../../services/gig-services';
+import { Router } from '@angular/router';
 
 interface Gig {
   id: number;
@@ -39,6 +41,7 @@ export class VerifyGigs implements OnInit, OnDestroy {
   // services
   private appBar = inject(AppBarService);
 
+
   // platform
   private isBrowser: boolean;
 
@@ -48,6 +51,9 @@ export class VerifyGigs implements OnInit, OnDestroy {
 
   // keep reference so we can remove it
   private resizeHandler = () => this.checkScreen();
+
+  private gigService = inject(GigServices);
+  private router = inject(Router);
 
   constructor(
     @Inject(PLATFORM_ID) platformId: Object
@@ -120,6 +126,32 @@ export class VerifyGigs implements OnInit, OnDestroy {
     ];
 
     this.isLoading = false;
+
+    this.getUnverifiedGigs();
+  }
+
+
+  getUnverifiedGigs()  {
+    this.gigService.getUnverifiedGigs().subscribe({
+      next: (data) => {
+        this.unverifiedGigs = data;
+        this.isLoading = false;
+        console.log('Unverified gigs fetched', data);
+      },
+      error: (err) => {
+        console.error('Error fetching unverified gigs', err);
+        this.isLoading = false;
+        if (err.status === 0) {
+          
+        } else if (err.status === 401) {
+          // Unauthorized
+          this.router.navigate(['/login']);
+        } else {
+          // Other errors
+          alert('Failed to fetch unverified gigs. Please try again.');
+        }
+      }
+    });
   }
 
   verifyGig(gigId: number): void {
