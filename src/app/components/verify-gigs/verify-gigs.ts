@@ -9,9 +9,9 @@ import {
 } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AppBarService } from '../../services/app-bar-service';
-import { Inject } from '@angular/core';
 import { GigServices } from '../../services/gig-services';
 import { Router } from '@angular/router';
+import { TokenService } from '../../services/token-service';
 
 interface Gig {
   id: number;
@@ -34,34 +34,22 @@ interface Gig {
   styleUrls: ['./verify-gigs.css'],
 })
 export class VerifyGigs implements OnInit, OnDestroy {
-
-  // signals
+  // ✅ Signals for reactive state management
   isMobile = signal(false);
+  isLoading = signal(false);
+  unverifiedGigs = signal<Gig[]>([]);
 
-  // services
   private appBar = inject(AppBarService);
-
-
-  // platform
-  private isBrowser: boolean;
-
-  // state
-  isLoading = false;
-  unverifiedGigs: Gig[] = [];
-
-  // keep reference so we can remove it
-  private resizeHandler = () => this.checkScreen();
-
   private gigService = inject(GigServices);
   private router = inject(Router);
+  private platformId = inject(PLATFORM_ID);
+  private tokenService = inject(TokenService);
 
-  constructor(
-    @Inject(PLATFORM_ID) platformId: Object
-  ) {
-    // ✅ SAFE platform check
-    this.isBrowser = isPlatformBrowser(platformId);
+  private isBrowser: boolean;
+  private resizeHandler = () => this.checkScreen();
 
-    // ✅ ONLY run browser logic in browser
+  constructor() {
+    this.isBrowser = isPlatformBrowser(this.platformId);
     if (this.isBrowser) {
       afterNextRender(() => {
         this.checkScreen();
@@ -70,96 +58,58 @@ export class VerifyGigs implements OnInit, OnDestroy {
     }
   }
 
-  ngOnInit(): void {
-    this.appBar.setTitle('Verify Gigs');
-    this.appBar.setBack(true);
+ngOnInit(): void {
+  this.appBar.setTitle('Verify Gigs');
+  this.appBar.setBack(true);
 
-    this.fetchUnverifiedGigs();
+  if (isPlatformBrowser(this.platformId) && this.tokenService.isLoggedIn()) {
+    this.getUnverifiedGigs();
+  } else if (isPlatformBrowser(this.platformId)) {
+    // Optionally redirect to login
+    this.router.navigate(['/login']);
   }
+}
+
 
   private checkScreen(): void {
     if (!this.isBrowser) return;
     this.isMobile.set(window.innerWidth < 992);
   }
 
-  fetchUnverifiedGigs(): void {
-    this.isLoading = true;
-
-    // 🔧 MOCK DATA (replace with API later)
-    this.unverifiedGigs = [
-      {
-        id: 1,
-        client_name: 'John Mwangi',
-        client_phone: '+254 712 345 678',
-        ward: 'Parklands',
-        constituency: 'Westlands',
-        county: 'Nairobi',
-        start_date: '2026-01-15',
-        duration_value: 3,
-        duration_unit: 'days',
-        is_verified: false,
-      },
-      {
-        id: 2,
-        client_name: 'Mary Njeri',
-        client_phone: '+254 723 456 789',
-        ward: 'Kilimani',
-        constituency: 'Dagoretti North',
-        county: 'Nairobi',
-        start_date: '2026-01-16',
-        duration_value: 5,
-        duration_unit: 'days',
-        is_verified: false,
-      },
-      {
-        id: 3,
-        client_name: 'Peter Omondi',
-        client_phone: '+254 734 567 890',
-        ward: 'Karen',
-        constituency: 'Langata',
-        county: 'Nairobi',
-        start_date: '2026-01-18',
-        duration_value: 1,
-        duration_unit: 'week',
-        is_verified: false,
-      },
-    ];
-
-    this.isLoading = false;
-
-    this.getUnverifiedGigs();
-  }
-
-
-  getUnverifiedGigs()  {
+  getUnverifiedGigs() {
+    this.isLoading.set(true);
     this.gigService.getUnverifiedGigs().subscribe({
       next: (data) => {
-        this.unverifiedGigs = data;
-        this.isLoading = false;
+        this.unverifiedGigs.set(data);
+        this.isLoading.set(false);
         console.log('Unverified gigs fetched', data);
       },
       error: (err) => {
         console.error('Error fetching unverified gigs', err);
-        this.isLoading = false;
-        if (err.status === 0) {
-          
-        } else if (err.status === 401) {
-          // Unauthorized
-          this.router.navigate(['/login']);
-        } else {
-          // Other errors
-          alert('Failed to fetch unverified gigs. Please try again.');
-        }
+        this.isLoading.set(false);
+
       }
     });
   }
 
   verifyGig(gigId: number): void {
-    this.unverifiedGigs = this.unverifiedGigs.filter(
-      gig => gig.id !== gigId
-    );
-
-    console.log(`Gig ${gigId} verified`);
+    this.gigService.verifyGig(gigId).subscribe({
+      next: (response) => {
+        console.log('Gig verified', response);
+        // Remove the verified gig from the list
+        this.unverifiedGigs.set(
+          this.unverifiedGigs().filter(gig => gig.id !== gigId)
+        );
+      },
+      error: (err) => {
+        console.error('Error verifying gig', err);
+        if (err.status === 401) {
+          this.router.navigate(['/login']);
+        } else if (err.status !== 0) {
+          alert('Failed to verify gig. Please try again.');
+        }
+      }
+    });
   }
 
   ngOnDestroy(): void {

@@ -1,19 +1,15 @@
-<!-- verify-gigs.component.html -->
-
 <div class="page">
   @if (isMobile()) {
     <br><br>
   }
 
-  <!-- Loading State -->
-  @if (isLoading) {
+  @if (isLoading()) {
     <div class="loading-container">
       <div class="spinner"></div>
     </div>
   }
 
-  <!-- Empty State -->
-  @else if (unverifiedGigs.length === 0) {
+  @else if (unverifiedGigs().length === 0) {
     <div class="empty-state">
       <i class="material-icons empty-icon">verified</i>
       <h3>All gigs are verified!</h3>
@@ -21,12 +17,10 @@
     </div>
   }
 
-  <!-- Gigs List -->
   @else {
     <div class="gigs-container">
-      @for (gig of unverifiedGigs; track gig.id) {
+      @for (gig of unverifiedGigs(); track gig.id) {
         <div class="gig-card">
-          <!-- Header -->
           <div class="gig-header">
             <h3 class="client-name">{{ gig.client_name || 'No Name' }}</h3>
             <span class="pending-badge">
@@ -35,7 +29,6 @@
             </span>
           </div>
 
-          <!-- Contact & Location -->
           <div class="gig-info">
             <div class="info-row">
               <i class="material-icons">phone</i>
@@ -49,7 +42,6 @@
 
           <div class="divider"></div>
 
-          <!-- Gig Details -->
           <div class="gig-details">
             <div class="detail-item">
               <div class="detail-label">
@@ -67,7 +59,6 @@
             </div>
           </div>
 
-          <!-- Verify Button -->
           <div class="button-container">
             <button class="verify-btn" (click)="verifyGig(gig.id)">
               <i class="material-icons">verified</i>
