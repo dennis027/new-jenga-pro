@@ -16,6 +16,7 @@ import { AddGigTypes } from './components/add-gig-types/add-gig-types';
 import { AddSites } from './components/add-sites/add-sites';
 import { MpesaPayments } from './components/mpesa-payments/mpesa-payments';
 import { Analytics } from './components/analytics/analytics';
+import { Profile } from './components/profile/profile';
 
 export const routes: Routes = [
   {path:'home',component:Home},
@@ -34,6 +35,7 @@ export const routes: Routes = [
         {path:'add-sites',canActivate: [AuthGuard],component:AddSites},
         {path:'MPESA-Payments',canActivate: [AuthGuard],component:MpesaPayments},
         {path:'analytics',canActivate: [AuthGuard],component:Analytics},
+        {path:'profile',canActivate: [AuthGuard],component:Profile},
 
         { path: '404', component: Dash404 },
         { path: '**', redirectTo: '/404' } 
