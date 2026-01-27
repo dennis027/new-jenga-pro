@@ -1,15 +1,11 @@
-<!-- supervisor-dash.component.html -->
-
-<!-- Hidden menu trigger for AppBar action button -->
 <button 
   #accountMenuTrigger="matMenuTrigger"
   [matMenuTriggerFor]="accountMenu"
   style="display: none;">
 </button>
 
-<!-- Account Menu -->
 <mat-menu #accountMenu="matMenu" xPosition="before">
-  <button mat-menu-item  (click)="navigate('/main-menu/profile')">
+  <button mat-menu-item (click)="navigate('/main-menu/update-profile')">
     <mat-icon>person</mat-icon>
     <span>Manage Account</span>
   </button>
@@ -25,25 +21,23 @@
   @if (isMobile()) { 
     <br><br>
     
-    <!-- Header Card -->
     <section class="card header-card">
       <div class="header-content">
         <img 
-          [src]="imgFile ? imgUrl + imgFile : 'assets/user.png'" 
+          [src]="imgFile() ? imgUrl + imgFile() : 'assets/user.png'" 
           alt="Profile" 
           class="profile-avatar"
         />
         <div class="header-text">
-          <h2>Hello, {{ fullname }}!</h2>
-          <p>{{ email }}</p>
+          <h2>Hello, {{ fullname() }}!</h2>
+          <p>{{ email() }}</p>
         </div>
       </div>
     </section>
 
-    <!-- Stats Card -->
     <section class="card stats-card">
       <div class="stat-row">
-        <i class="material-icons teal"></i>
+        <i class="material-icons teal">trending_up</i>
         <span class="label">Total Gigs</span>
         <span class="value">{{ totalGigs }}</span>
       </div>
@@ -53,10 +47,8 @@
         <span class="label">Unverified Gigs</span>
         <span class="value">{{ unverifiedGigs }}</span>
       </div>
-      
     </section>
 
-    <!-- Mobile Activity Calendar -->
     <section class="card activity-card">
       <h3>📊 Recent Activity</h3>
       <div class="mobile-calendar">
@@ -82,7 +74,6 @@
       </div>
     </section>
 
-    <!-- Action Cards Grid -->
     <section class="mobile-actions">
       <div class="action-card" (click)="navigate('/main-menu/all-gigs')">
         <i class="material-icons">verified</i>
@@ -119,17 +110,13 @@
     </section>
   }
 
-  <!-- Desktop Analytics Dashboard -->
   @if (!isMobile()) {
-    <!-- Desktop Header -->
     <div class="desktop-header">
       <h1>Supervisor Dashboard</h1>
       <p>Manage your construction sites and workers</p>
     </div>
 
-    <!-- Stats Grid -->
     <div class="stats-grid">
-      <!-- Total Gigs -->
       <div class="stat-card">
         <div class="stat-header">
           <div class="stat-icon bg-blue">
@@ -141,7 +128,6 @@
         <p class="stat-subtitle">All time</p>
       </div>
 
-      <!-- Unverified Gigs -->
       <div class="stat-card">
         <div class="stat-header">
           <div class="stat-icon bg-orange">
@@ -153,7 +139,6 @@
         <p class="stat-subtitle">Pending verification</p>
       </div>
 
-      <!-- Active Workers -->
       <div class="stat-card">
         <div class="stat-header">
           <div class="stat-icon bg-green">
@@ -165,7 +150,6 @@
         <p class="stat-subtitle">This month</p>
       </div>
 
-      <!-- Active Sites -->
       <div class="stat-card">
         <div class="stat-header">
           <div class="stat-icon bg-purple">
@@ -178,13 +162,11 @@
       </div>
     </div>
 
-    <!-- Main Content Grid -->
     <div class="desktop-grid">
-      <!-- Recent Gigs -->
       <div class="desktop-card recent-gigs">
         <div class="card-header">
           <h2>Recent Gigs</h2>
-          <button class="view-all-btn" (click)="navigate('/main-menu/gig-list')">View All</button>
+          <button class="view-all-btn" (click)="navigate('/main-menu/all-gigs')">View All</button>
         </div>
         <div class="gigs-list">
           @for (gig of recentGigs; track gig.id) {
@@ -207,13 +189,11 @@
         </div>
       </div>
 
-      <!-- Activity Overview -->
       <div class="desktop-card">
         <div class="card-header">
           <h2>Activity Overview</h2>
         </div>
         <div class="activity-content">
-          <!-- Weekly Summary -->
           <div class="weekly-chart">
             <h3>This Week</h3>
             <div class="chart-bars">
@@ -227,7 +207,6 @@
             </div>
           </div>
 
-          <!-- Quick Stats -->
           <div class="quick-stats">
             <div class="quick-stat-item">
               <i class="material-icons">check_circle</i>
@@ -255,9 +234,7 @@
       </div>
     </div>
 
-    <!-- Bottom Grid -->
     <div class="bottom-grid">
-      <!-- Sites Performance -->
       <div class="desktop-card">
         <div class="card-header">
           <h2>Sites Performance</h2>
@@ -285,7 +262,6 @@
         </div>
       </div>
 
-      <!-- Top Workers -->
       <div class="desktop-card">
         <div class="card-header">
           <h2>Top Workers (This Month)</h2>

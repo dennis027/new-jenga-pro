@@ -1,5 +1,5 @@
 import { isPlatformBrowser, CommonModule } from '@angular/common';
-import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { Component, inject, PLATFORM_ID, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppBarService } from '../../services/app-bar-service';
@@ -25,7 +25,7 @@ interface Constituency {
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
-export class Profile {
+export class Profile implements OnInit {
   private appBar = inject(AppBarService);
   private userService = inject(UserService);
   private platformId = inject(PLATFORM_ID);
@@ -35,12 +35,12 @@ export class Profile {
 
   profileForm!: FormGroup;
   isLoading = true;
+  isSaving = false;
   profilePicUrl: string | null = null;
   selectedImage: File | null = null;
   selectedImagePreview: string | null = null;
   showImageOptions = false;
 
-  // Location data
   regions: County[] = regionsData as County[];
   constituencies: string[] = [];
   wards: string[] = [];
@@ -48,60 +48,43 @@ export class Profile {
   ngOnInit() {
     this.appBar.setTitle('Update Profile');
     this.appBar.setBack(true);
-
     this.initializeForm();
 
-    if (isPlatformBrowser(this.platformId) && this.tokenService.isLoggedIn()) {
-      this.getLoggedInUser();
-    } else if (isPlatformBrowser(this.platformId)) {
-      this.router.navigate(['/login']);
+    if (isPlatformBrowser(this.platformId)) {
+      if (!this.tokenService.isLoggedIn()) {
+        this.router.navigate(['/login']);
+      } else {
+        this.getLoggedInUser();
+      }
+    } else {
+      this.isLoading = false;
     }
   }
 
-private initializeForm() {
-  this.profileForm = this.fb.group({
-    fullName: ['', Validators.required],
-    nationalId: ['', Validators.required],
-    phone: ['', [Validators.required, this.phoneValidator]],
-    county: ['', Validators.required],
-    constituency: [{ value: '', disabled: true }, Validators.required], // Start disabled
-    ward: [{ value: '', disabled: true }, Validators.required], // Start disabled
-  });
+  private initializeForm() {
+    this.profileForm = this.fb.group({
+      fullName: ['', Validators.required],
+      nationalId: ['', Validators.required],
+      phone: ['', [Validators.required, this.phoneValidator]],
+      county: ['', Validators.required],
+      constituency: [{ value: '', disabled: true }, Validators.required],
+      ward: [{ value: '', disabled: true }, Validators.required],
+    });
 
-  this.profileForm.get('county')?.valueChanges.subscribe(county => {
-    this.onCountyChanged(county);
-  });
+    // Watch for manual changes to reset children
+    this.profileForm.get('county')?.valueChanges.subscribe(county => {
+      this.onCountyChanged(county, true);
+    });
 
-  this.profileForm.get('constituency')?.valueChanges.subscribe(constituency => {
-    this.onConstituencyChanged(constituency);
-  });
-}
-
-  private phoneValidator(control: any) {
-    if (!control.value) return { required: true };
-
-    const cleanedPhone = control.value.replace(/[\s\-\(\)]/g, '');
-
-    if (cleanedPhone.startsWith('254')) {
-      if (cleanedPhone.length !== 12) return { invalidPhone: true };
-    } else if (cleanedPhone.startsWith('0')) {
-      if (cleanedPhone.length !== 10) return { invalidPhone: true };
-    } else if (cleanedPhone.startsWith('7') || cleanedPhone.startsWith('1')) {
-      if (cleanedPhone.length !== 9) return { invalidPhone: true };
-    } else {
-      return { invalidPhone: true };
-    }
-
-    if (!/^[0-9]+$/.test(cleanedPhone)) {
-      return { invalidPhone: true };
-    }
-
-    return null;
+    this.profileForm.get('constituency')?.valueChanges.subscribe(constituency => {
+      this.onConstituencyChanged(constituency, true);
+    });
   }
 
   private getLoggedInUser() {
     this.userService.getUserDetails().subscribe({
       next: (data) => {
+        // 1. Set basic info
         this.profileForm.patchValue({
           fullName: data.full_name || '',
           nationalId: data.national_id || '',
@@ -110,91 +93,74 @@ private initializeForm() {
 
         this.profilePicUrl = data.profile_pic || null;
 
-        // Set location data with validation
+        // 2. Cascade Location Data
         if (data.county) {
-          const countyExists = this.regions.some(r => r.county_name === data.county);
-          if (countyExists) {
-            this.profileForm.patchValue({ county: data.county });
-            this.onCountyChanged(data.county);
+          this.onCountyChanged(data.county, false);
+          this.profileForm.get('county')?.setValue(data.county, { emitEvent: false });
 
-            if (data.constituency && this.constituencies.includes(data.constituency)) {
-              this.profileForm.patchValue({ constituency: data.constituency });
-              this.onConstituencyChanged(data.constituency);
+          if (data.constituency) {
+            this.onConstituencyChanged(data.constituency, false);
+            this.profileForm.get('constituency')?.setValue(data.constituency, { emitEvent: false });
 
-              if (data.ward && this.wards.includes(data.ward)) {
-                this.profileForm.patchValue({ ward: data.ward });
-              }
+            if (data.ward) {
+              this.profileForm.get('ward')?.setValue(data.ward, { emitEvent: false });
             }
           }
         }
-
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error fetching user profile', err);
+        console.error('Error fetching profile', err);
         this.isLoading = false;
-        if (err.status === 401) {
-          this.router.navigate(['/login']);
-        }
       }
     });
   }
 
-onCountyChanged(county: string | null) {
-  this.profileForm.patchValue({ constituency: '', ward: '' });
-  this.constituencies = [];
-  this.wards = [];
+  onCountyChanged(county: string | null, shouldResetChildren: boolean) {
+    const constituencyCtrl = this.profileForm.get('constituency');
+    const wardCtrl = this.profileForm.get('ward');
 
-  const constituencyControl = this.profileForm.get('constituency');
-  const wardControl = this.profileForm.get('ward');
-
-  if (county) {
-    const countyData = this.regions.find(r => r.county_name === county);
-    if (countyData) {
-      this.constituencies = countyData.constituencies.map(c => c.constituency_name);
-      constituencyControl?.enable(); // Enable when county is selected
+    if (shouldResetChildren) {
+      this.profileForm.patchValue({ constituency: '', ward: '' }, { emitEvent: false });
+      wardCtrl?.disable();
     }
-  } else {
-    constituencyControl?.disable(); // Disable when no county
-    wardControl?.disable(); // Also disable ward
-  }
-}
 
-onConstituencyChanged(constituency: string | null) {
-  this.profileForm.patchValue({ ward: '' });
-  this.wards = [];
-
-  const wardControl = this.profileForm.get('ward');
-
-  if (constituency && this.profileForm.value.county) {
-    const countyData = this.regions.find(r => r.county_name === this.profileForm.value.county);
-    if (countyData) {
-      const constituencyData = countyData.constituencies.find(c => c.constituency_name === constituency);
-      if (constituencyData) {
-        this.wards = constituencyData.wards;
-        wardControl?.enable(); // Enable when constituency is selected
-      }
+    if (county) {
+      const countyData = this.regions.find(r => r.county_name === county);
+      this.constituencies = countyData ? countyData.constituencies.map(c => c.constituency_name) : [];
+      constituencyCtrl?.enable();
+    } else {
+      constituencyCtrl?.disable();
     }
-  } else {
-    wardControl?.disable(); // Disable when no constituency
   }
-}
-  toggleImageOptions() {
-    this.showImageOptions = !this.showImageOptions;
+
+  onConstituencyChanged(constituency: string | null, shouldResetChildren: boolean) {
+    const wardCtrl = this.profileForm.get('ward');
+    
+    if (shouldResetChildren) {
+      this.profileForm.patchValue({ ward: '' }, { emitEvent: false });
+    }
+
+    if (constituency && this.profileForm.get('county')?.value) {
+      const countyData = this.regions.find(r => r.county_name === this.profileForm.get('county')?.value);
+      const constituencyData = countyData?.constituencies.find(c => c.constituency_name === constituency);
+      this.wards = constituencyData ? constituencyData.wards : [];
+      wardCtrl?.enable();
+    } else {
+      wardCtrl?.disable();
+    }
   }
+
+  // --- Image Handlers ---
+  toggleImageOptions() { this.showImageOptions = !this.showImageOptions; }
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (input.files && input.files[0]) {
+    if (input.files?.[0]) {
       this.selectedImage = input.files[0];
-      
-      // Create preview
       const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.selectedImagePreview = e.target.result;
-      };
+      reader.onload = (e: any) => this.selectedImagePreview = e.target.result;
       reader.readAsDataURL(this.selectedImage);
-      
       this.showImageOptions = false;
     }
   }
@@ -207,51 +173,47 @@ onConstituencyChanged(constituency: string | null) {
   }
 
   getCurrentImageUrl(): string {
-    if (this.selectedImagePreview) {
-      return this.selectedImagePreview;
-    }
-    if (this.profilePicUrl) {
-      return `${this.getImgBaseUrl()}${this.profilePicUrl}`;
-    }
+    if (this.selectedImagePreview) return this.selectedImagePreview;
+    if (this.profilePicUrl) return `https://your-api-url.com${this.profilePicUrl}`;
     return '';
   }
 
-  private getImgBaseUrl(): string {
-    // Replace with your actual image base URL from environment
-    return 'https://your-api-url.com';
+  private phoneValidator(control: any) {
+    if (!control.value) return null;
+    const cleaned = control.value.replace(/\D/g, '');
+    if (cleaned.startsWith('254') && cleaned.length === 12) return null;
+    if (cleaned.startsWith('0') && cleaned.length === 10) return null;
+    if ((cleaned.startsWith('7') || cleaned.startsWith('1')) && cleaned.length === 9) return null;
+    return { invalidPhone: true };
   }
 
   onSubmit() {
-    if (!this.profileForm.valid) {
-      Object.keys(this.profileForm.controls).forEach(key => {
-        this.profileForm.get(key)?.markAsTouched();
-      });
+    if (this.profileForm.invalid || this.isSaving) {
+      this.profileForm.markAllAsTouched();
       return;
     }
 
+    this.isSaving = true;
     const formData = new FormData();
-    formData.append('full_name', this.profileForm.value.fullName);
-    formData.append('national_id', this.profileForm.value.nationalId);
-    formData.append('phone', this.profileForm.value.phone);
-    formData.append('county', this.profileForm.value.county);
-    formData.append('constituency', this.profileForm.value.constituency);
-    formData.append('ward', this.profileForm.value.ward);
+    const val = this.profileForm.getRawValue(); // Gets values even from disabled fields
 
-    if (this.selectedImage) {
-      formData.append('profile_pic', this.selectedImage);
-    }
+    formData.append('full_name', val.fullName);
+    formData.append('national_id', val.nationalId);
+    formData.append('phone', val.phone);
+    formData.append('county', val.county);
+    formData.append('constituency', val.constituency);
+    formData.append('ward', val.ward);
 
-    // Call your update service here
+    if (this.selectedImage) formData.append('profile_pic', this.selectedImage);
+
     this.userService.updateUserDetails(formData).subscribe({
       next: () => {
-        // Show success message and navigate
+        this.isSaving = false;
         this.router.navigate(['/home']);
       },
       error: (err) => {
-        console.error('Error updating profile', err);
-        if (err.status === 401) {
-          this.router.navigate(['/login']);
-        }
+        this.isSaving = false;
+        console.error('Update failed', err);
       }
     });
   }

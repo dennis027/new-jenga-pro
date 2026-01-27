@@ -10,6 +10,7 @@ import { AppBarService } from '../../services/app-bar-service';
 import { UserService } from '../../services/user-service';
 import { TokenService } from '../../services/token-service';
 
+
 interface Gig {
   id: number;
   workerName: string;
@@ -74,10 +75,11 @@ export class JengaDash {
   private tokenService = inject(TokenService);
 
   // User data
-  username: string = '';
-  email: string = 'james.k@example.com';
-  fullname: string = 'James Kiprotich';
-  imgFile: string = '';
+
+  username = signal<string>('');
+  email = signal<string>('');
+  fullname = signal<string>('');
+  imgFile = signal<any>('');
   
   // Stats
   totalGigs: number = 24;
@@ -171,43 +173,45 @@ export class JengaDash {
   private checkScreen(): void {
     this.isMobile.set(window.innerWidth < 992);
   }
+ngOnInit(): void {
+  this.appBar.setTitle('Jenga Pro');
+  this.appBar.setBack(false);
 
-  ngOnInit(): void {
-    this.appBar.setTitle('Jenga Pro');
-    this.appBar.setBack(false);
-
-    this.appBar.setActions([
-      {
-        id: 'account',
-        icon: 'account_circle',
-        ariaLabel: 'Account',
-        onClick: () => {
-          setTimeout(() => {
-            this.accountMenuTrigger?.openMenu();
-          }, 0);
-        },
+  // Set actions
+  this.appBar.setActions([
+    {
+      id: 'account',
+      icon: 'account_circle',
+      ariaLabel: 'Account',
+      onClick: () => {
+        // Use requestAnimationFrame or a 0ms timeout to ensure 
+        // the menu opens after the click event cycle
+        setTimeout(() => this.accountMenuTrigger?.openMenu(), 0);
       },
-    ]);
+    },
+  ]);
 
-    this.generateLast7Days();
-    this.fetchSupervisorData();
-
-    if (isPlatformBrowser(this.platformId) && this.tokenService.isLoggedIn()) {
+  this.generateLast7Days();
+  
+  // Browser-only logic
+  if (isPlatformBrowser(this.platformId)) {
+    if (this.tokenService.isLoggedIn()) {
       this.getLoggedInUser();
-  } else if (isPlatformBrowser(this.platformId)) {
-    // Optionally redirect to login
-    this.router.navigate(['/login']);
+      this.fetchSupervisorData(); // Move inside the auth check
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
-  }
+}
 
-  getLoggedInUser(): void { 
+getLoggedInUser(): void { 
     this.userService.getUserDetails().subscribe({
       next: (data) => {
-        console.log('User profile data', data);
-        this.username = data.username;
-        this.fullname = data.full_name;
-        this.email = data.email;
-        this.imgFile = data.profile_image ? data.profile_image : '';
+        // Update signals instead of raw properties
+        this.username.set(data.username || '');
+        this.fullname.set(data.full_name || '');
+        this.email.set(data.email || '');
+        this.imgFile.set(data.profile_image || '');
       },
       error: (err) => {
         console.error('Error fetching user profile', err);
