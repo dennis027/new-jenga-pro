@@ -1,10 +1,13 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, OnDestroy, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AppBarService } from '../../services/app-bar-service';
+import { MpesaService } from '../../services/mpesa-service';
+import { Router } from '@angular/router';
 
 interface MpesaTransaction {
   id: number;
-  amount: string | number;
+  amount: number;
   mpesa_receipt_number: string;
   transaction_date: string;
   phone_number: string;
@@ -18,245 +21,200 @@ interface MpesaTransaction {
   templateUrl: './mpesa-payments.html',
   styleUrl: './mpesa-payments.css',
 })
-export class MpesaPayments implements OnInit {
+export class MpesaPayments implements OnInit, OnDestroy {
+  private appBar = inject(AppBarService);
+  private platformId = inject(PLATFORM_ID);
+  private mpesaService = inject(MpesaService);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+
   mpesaMessages: MpesaTransaction[] = [];
   filteredMessages: MpesaTransaction[] = [];
   isLoading = false;
-  
+
+  // Filter properties
+  filterPhone: string = '';
+  filterStartDate: string = '';
+  filterEndDate: string = '';
+  filterAmount: string = '';
+  filterReceipt: string = '';
+
   // Dialog states
   showPaymentDialog = false;
   showFilterDialog = false;
-  
+
   // Payment form
-  paymentForm = {
-    phoneNumber: '',
-    amount: ''
-  };
-  
-  // Filter form
-  filterForm = {
-    phone: '',
-    amount: '',
-    receipt: '',
-    startDate: '',
-    endDate: ''
-  };
-  
-  saving = false;
+  paymentPhone: string = '';
+  paymentAmount: number | null = null;
 
-  // Dummy data
-  private dummyData: MpesaTransaction[] = [
-    {
-      id: 1,
-      amount: 1500,
-      mpesa_receipt_number: 'SHK7G8X9Y2',
-      transaction_date: '2026-01-21T10:30:00Z',
-      phone_number: '254712345678',
-      status: 'completed'
-    },
-    {
-      id: 2,
-      amount: 2500,
-      mpesa_receipt_number: 'TLM9K2P3Q4',
-      transaction_date: '2026-01-20T14:15:00Z',
-      phone_number: '254723456789',
-      status: 'completed'
-    },
-    {
-      id: 3,
-      amount: 500,
-      mpesa_receipt_number: 'UMN4R5S6T7',
-      transaction_date: '2026-01-20T09:45:00Z',
-      phone_number: '254734567890',
-      status: 'completed'
-    },
-    {
-      id: 4,
-      amount: 3200,
-      mpesa_receipt_number: 'VOP8W9X1Y2',
-      transaction_date: '2026-01-19T16:20:00Z',
-      phone_number: '254745678901',
-      status: 'completed'
-    },
-    {
-      id: 5,
-      amount: 1000,
-      mpesa_receipt_number: 'WQR3Z4A5B6',
-      transaction_date: '2026-01-19T11:00:00Z',
-      phone_number: '254756789012',
-      status: 'completed'
-    },
-    {
-      id: 6,
-      amount: 4500,
-      mpesa_receipt_number: 'XST7C8D9E1',
-      transaction_date: '2026-01-18T13:30:00Z',
-      phone_number: '254767890123',
-      status: 'completed'
-    },
-    {
-      id: 7,
-      amount: 800,
-      mpesa_receipt_number: 'YUV2F3G4H5',
-      transaction_date: '2026-01-18T08:15:00Z',
-      phone_number: '254778901234',
-      status: 'completed'
-    },
-    {
-      id: 8,
-      amount: 2100,
-      mpesa_receipt_number: 'ZWX6I7J8K9',
-      transaction_date: '2026-01-17T15:45:00Z',
-      phone_number: '254789012345',
-      status: 'completed'
-    }
-  ];
+  constructor() {}
 
-  ngOnInit() {
-    this.loadMpesaMessages();
-  }
-
-  loadMpesaMessages() {
-    this.isLoading = true;
+  ngOnInit(): void {
+    // Set AppBar configuration first
+    this.appBar.setTitle('Mpesa Payments');
+    this.appBar.setBack(true);
     
-    // Simulate API call delay
-    setTimeout(() => {
-      this.mpesaMessages = [...this.dummyData];
-      this.applyFiltersToData();
-      this.isLoading = false;
-    }, 500);
+    // Set mobile action buttons
+    this.appBar.setActions([
+      { 
+        id: 'filter-payment',
+        icon: 'filter_list',
+        ariaLabel: 'Filter',
+        onClick: () => {
+          this.openFilterDialog();
+        }
+      },
+      { 
+        id: 'refresh-payments',
+        icon: 'refresh',
+        ariaLabel: 'Refresh',
+        onClick: () => {
+          this.refresh();
+        },
+      }
+    ]);
+
+    // Fetch messages after AppBar setup
+    if (isPlatformBrowser(this.platformId)) {
+      // Use setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+      setTimeout(() => {
+        this.fetchMpesaMessages();
+      }, 0);
+    }
   }
 
-  applyFiltersToData() {
+  ngOnDestroy(): void {
+    // Clean up AppBar state
+    this.appBar.setActions([]);
+    this.appBar.setBack(false);
+  }
+
+  fetchMpesaMessages(): void {
+    this.isLoading = true;
+    this.cdr.detectChanges();
+
+    this.mpesaService.getSingleMessages().subscribe({
+      next: (data) => {
+        this.mpesaMessages = data.transactions;
+        this.filteredMessages = [...this.mpesaMessages];
+        this.isLoading = false;
+        this.cdr.detectChanges();
+        console.log('Fetched Mpesa messages:', this.mpesaMessages);
+      },
+      error: (err) => {
+        console.error('Error fetching Mpesa messages:', err);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+        if (err.status === 401) {
+          this.router.navigate(['/login']);
+        }
+      }
+    }); 
+  }
+
+  applyFilters(): void {
     this.filteredMessages = this.mpesaMessages.filter(msg => {
       let matches = true;
 
-      if (this.filterForm.phone) {
-        matches = matches && msg.phone_number.includes(this.filterForm.phone);
+      if (this.filterPhone) {
+        matches = matches && msg.phone_number.includes(this.filterPhone.replace(/^0/, '254'));
       }
 
-      if (this.filterForm.amount) {
-        matches = matches && msg.amount.toString() === this.filterForm.amount;
+      if (this.filterAmount) {
+        matches = matches && msg.amount.toString().includes(this.filterAmount);
       }
 
-      if (this.filterForm.receipt) {
-        matches = matches && msg.mpesa_receipt_number.toLowerCase().includes(
-          this.filterForm.receipt.toLowerCase()
-        );
+      if (this.filterReceipt) {
+        matches = matches && msg.mpesa_receipt_number.toLowerCase().includes(this.filterReceipt.toLowerCase());
       }
 
-      if (this.filterForm.startDate) {
-        const msgDate = new Date(msg.transaction_date);
-        const startDate = new Date(this.filterForm.startDate);
-        matches = matches && msgDate >= startDate;
+      if (this.filterStartDate) {
+        matches = matches && new Date(msg.transaction_date) >= new Date(this.filterStartDate);
       }
 
-      if (this.filterForm.endDate) {
-        const msgDate = new Date(msg.transaction_date);
-        const endDate = new Date(this.filterForm.endDate);
-        matches = matches && msgDate <= endDate;
+      if (this.filterEndDate) {
+        matches = matches && new Date(msg.transaction_date) <= new Date(this.filterEndDate);
       }
 
       return matches;
     });
   }
 
-  openPaymentDialog() {
-    this.paymentForm = { phoneNumber: '', amount: '' };
+  openPaymentDialog(): void {
     this.showPaymentDialog = true;
+    this.paymentPhone = '';
+    this.paymentAmount = null;
   }
 
-  closePaymentDialog() {
+  closePaymentDialog(): void {
     this.showPaymentDialog = false;
-    this.paymentForm = { phoneNumber: '', amount: '' };
   }
 
-  sendStkPush() {
-    let phone = this.paymentForm.phoneNumber.trim();
-    const amount = parseFloat(this.paymentForm.amount);
-
-    if (!phone || amount <= 0) {
-      alert('Please fill in all required fields');
+  sendStkPush(): void {
+    if (!this.paymentPhone || !this.paymentAmount || this.paymentAmount <= 0) {
       return;
     }
 
-    // Format phone number
+    let phone = this.paymentPhone.trim();
     if (phone.startsWith('0')) {
       phone = '254' + phone.substring(1);
     } else if (phone.startsWith('+254')) {
       phone = '254' + phone.substring(4);
     }
 
-    this.saving = true;
-
-    // Simulate API call
-    setTimeout(() => {
-      // Add new transaction to dummy data
-      const newTransaction: MpesaTransaction = {
-        id: this.mpesaMessages.length + 1,
-        amount: amount,
-        mpesa_receipt_number: this.generateReceiptNumber(),
-        transaction_date: new Date().toISOString(),
-        phone_number: phone,
-        status: 'completed'
-      };
-
-      this.mpesaMessages.unshift(newTransaction);
-      this.applyFiltersToData();
-      
-      this.saving = false;
-      this.closePaymentDialog();
-      alert('STK push sent successfully');
-    }, 1000);
-  }
-
-  generateReceiptNumber(): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let result = '';
-    for (let i = 0; i < 10; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    const data = {
+      phone_number: phone,
+      amount: this.paymentAmount
     }
-    return result;
+
+    this.mpesaService.stkPush(data).subscribe({
+      next: (response) => {
+        console.log('STK Push initiated successfully:', response);
+        alert('STK Push initiated. Please check your phone to complete the payment.');
+        this.closePaymentDialog();
+        this.fetchMpesaMessages();
+      },
+      error: (err) => {
+        console.error('Error initiating STK Push:', err);
+        alert('Failed to initiate STK Push. Please try again.');
+      }
+    }); 
   }
 
-  openFilterDialog() {
+  openFilterDialog(): void {
     this.showFilterDialog = true;
   }
 
-  closeFilterDialog() {
+  closeFilterDialog(): void {
     this.showFilterDialog = false;
   }
 
-  applyFilters() {
-    this.applyFiltersToData();
+  applyFilterDialog(): void {
+    this.applyFilters();
     this.closeFilterDialog();
   }
 
-  clearFilters() {
-    this.filterForm = {
-      phone: '',
-      amount: '',
-      receipt: '',
-      startDate: '',
-      endDate: ''
-    };
-    this.applyFiltersToData();
+  clearFilters(): void {
+    this.filterPhone = '';
+    this.filterStartDate = '';
+    this.filterEndDate = '';
+    this.filterAmount = '';
+    this.filterReceipt = '';
+    this.filteredMessages = [...this.mpesaMessages];
     this.closeFilterDialog();
   }
 
   formatDate(dateStr: string): string {
-    try {
-      const date = new Date(dateStr);
-      return date.toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    } catch {
-      return dateStr;
-    }
+    const date = new Date(dateStr);
+    const options: Intl.DateTimeFormatOptions = {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    };
+    return date.toLocaleString('en-US', options);
   }
 
   formatPhone(phone: string): string {
@@ -264,5 +222,9 @@ export class MpesaPayments implements OnInit {
       return '0' + phone.substring(3);
     }
     return phone;
+  }
+
+  refresh(): void {
+    this.fetchMpesaMessages();
   }
 }
