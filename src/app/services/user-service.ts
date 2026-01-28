@@ -18,8 +18,8 @@ export class UserService {
   }
 
   updateUserDetails(payload: any): Observable<any> {
-    return this.http.patch<any>(
-      this.apiUrl + 'user-details/',
+    return this.http.put<any>(
+      this.apiUrl + 'profile/',
       payload
     );
   }

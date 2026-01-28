@@ -9,6 +9,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { AppBarService } from '../../services/app-bar-service';
 import { UserService } from '../../services/user-service';
 import { TokenService } from '../../services/token-service';
+import { environment } from '../../../environments/environment';
 
 
 interface Gig {
@@ -197,6 +198,7 @@ ngOnInit(): void {
   if (isPlatformBrowser(this.platformId)) {
     if (this.tokenService.isLoggedIn()) {
       this.getLoggedInUser();
+      console.log('Fetching supervisor data...',this.imgFile);
       this.fetchSupervisorData(); // Move inside the auth check
     } else {
       this.router.navigate(['/login']);
@@ -211,7 +213,8 @@ getLoggedInUser(): void {
         this.username.set(data.username || '');
         this.fullname.set(data.full_name || '');
         this.email.set(data.email || '');
-        this.imgFile.set(data.profile_image || '');
+        this.imgFile.set(`${environment.apiUrl}${data.profile_image ?? ''}`);
+        console.log('User data fetched:', data);
       },
       error: (err) => {
         console.error('Error fetching user profile', err);

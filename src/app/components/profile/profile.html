@@ -1,17 +1,14 @@
 <div class="profile-container">
-  <!-- Loading State -->
-  @if (isLoading) {
+  @if (isLoading()) {
     <div class="loading-container">
-      <p class="loading-text">Loading profile data...</p>
+      <div class="spinner"></div> <p class="loading-text">Loading profile data...</p>
     </div>
   }
 
-  <!-- Profile Form -->
-  @if (!isLoading) {
-    <div class="profile-content">
+  @if (!isLoading()) {
+    <div class="profile-content" [class.form-saving]="isSaving()">
       <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
         
-        <!-- Profile Picture -->
         <div class="profile-pic-container">
           <div class="profile-pic-wrapper" (click)="toggleImageOptions()">
             <div class="avatar">
@@ -38,8 +35,7 @@
             </div>
           </div>
 
-          <!-- Image Options Modal -->
-          @if (showImageOptions) {
+          @if (showImageOptions()) {
             <div class="image-options-modal" (click)="toggleImageOptions()">
               <div class="image-options-content" (click)="$event.stopPropagation()">
                 <label class="option-item">
@@ -61,11 +57,8 @@
                   <input type="file" accept="image/*" capture="environment" (change)="onFileSelected($event)" hidden>
                 </label>
 
-                @if (selectedImagePreview || profilePicUrl) {
-                  <div 
-                    class="option-item option-item-danger"
-                    (click)="removeImage()"
-                  >
+                @if (selectedImagePreview() || profilePicUrl()) {
+                  <div class="option-item option-item-danger" (click)="removeImage()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="3 6 5 6 21 6"></polyline>
                       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
@@ -78,7 +71,6 @@
           }
         </div>
 
-        <!-- Full Name -->
         <div class="form-group">
           <label for="fullName">Full Name</label>
           <input 
@@ -93,7 +85,6 @@
           }
         </div>
 
-        <!-- National ID -->
         <div class="form-group">
           <label for="nationalId">National ID</label>
           <input 
@@ -108,7 +99,6 @@
           }
         </div>
 
-        <!-- Phone Number -->
         <div class="form-group">
           <label for="phone">Phone Number</label>
           <div class="input-with-icon">
@@ -129,7 +119,6 @@
           }
         </div>
 
-        <!-- County -->
         <div class="form-group">
           <label for="county">County</label>
           <select 
@@ -150,7 +139,6 @@
           }
         </div>
 
-        <!-- Constituency -->
         <div class="form-group">
           <label for="constituency">Constituency</label>
           <select 
@@ -160,7 +148,7 @@
             [class.error]="profileForm.get('constituency')?.invalid && profileForm.get('constituency')?.touched"
           >
             <option value="">
-              {{ !profileForm.value.county ? 'Select county first' : 'Select Constituency' }}
+              {{ !profileForm.get('county')?.value ? 'Select county first' : 'Select Constituency' }}
             </option>
             @for (constituency of constituencies; track constituency) {
               <option [value]="constituency">
@@ -173,7 +161,6 @@
           }
         </div>
 
-        <!-- Ward -->
         <div class="form-group">
           <label for="ward">Ward</label>
           <select 
@@ -183,7 +170,7 @@
             [class.error]="profileForm.get('ward')?.invalid && profileForm.get('ward')?.touched"
           >
             <option value="">
-              {{ !profileForm.value.constituency ? 'Select constituency first' : 'Select Ward' }}
+              {{ !profileForm.get('constituency')?.value ? 'Select constituency first' : 'Select Ward' }}
             </option>
             @for (ward of wards; track ward) {
               <option [value]="ward">
@@ -196,14 +183,18 @@
           }
         </div>
 
-        <!-- Submit Button -->
-        <button type="submit" class="submit-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-            <polyline points="17 21 17 13 7 13 7 21"></polyline>
-            <polyline points="7 3 7 8 15 8"></polyline>
-          </svg>
-          Save Changes
+        <button type="submit" class="submit-btn" [disabled]="isSaving()">
+          @if (isSaving()) {
+            <span class="btn-spinner"></span>
+            <span>Saving...</span>
+          } @else {
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            <span>Save Changes</span>
+          }
         </button>
       </form>
     </div>
