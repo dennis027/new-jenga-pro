@@ -1,16 +1,15 @@
-
 import { Component, signal, afterNextRender, inject, OnInit, OnDestroy, ViewChild, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDividerModule } from '@angular/material/divider';
+import { MatDividerModule } from '@angular/material/divider'; 
 import { AppBarService } from '../../services/app-bar-service';
 import { UserService } from '../../services/user-service';
 import { TokenService } from '../../services/token-service';
 import { environment } from '../../../environments/environment';
-
+import { forkJoin } from 'rxjs';
 
 interface Gig {
   id: number;
@@ -24,6 +23,7 @@ interface Gig {
 interface WeeklyData {
   day: string;
   gigs: number;
+  date?: string;
 }
 
 interface Site {
@@ -44,10 +44,20 @@ interface Worker {
 }
 
 interface CalendarDay {
-  date: Date;
+  date: string;
   dayName: string;
   dayNum: number;
   gigs: number;
+}
+
+interface DashboardStats {
+  total_gigs: number;
+  unverified_gigs: number;
+  active_workers: number;
+  active_sites: number;
+  verified_this_week: number;
+  verification_rate: number;
+  avg_verification_time: number;
 }
 
 @Component({
@@ -61,14 +71,15 @@ interface CalendarDay {
     MatButtonModule,
     MatDividerModule
   ],
-
   templateUrl: './jenga-dash.html',
   styleUrl: './jenga-dash.css',
 })
-export class JengaDash {
+export class JengaDash implements OnInit, OnDestroy {
   @ViewChild('accountMenuTrigger') accountMenuTrigger!: MatMenuTrigger;
   
   isMobile = signal(false);
+  isLoading = signal(true);
+  
   private appBar = inject(AppBarService);
   private router = inject(Router);
   private userService = inject(UserService);
@@ -76,93 +87,37 @@ export class JengaDash {
   private tokenService = inject(TokenService);
 
   // User data
-
   username = signal<string>('');
   email = signal<string>('');
   fullname = signal<string>('');
-  imgFile = signal<any>('');
+  imgFile = signal<string>('');
   
-  // Stats
-  totalGigs: number = 24;
-  unverifiedGigs: number = 5;
-  activeWorkers: number = 12;
-  activeSites: number = 3;
+  // Stats (now from API)
+  totalGigs = signal<number>(0);
+  unverifiedGigs = signal<number>(0);
+  activeWorkers = signal<number>(0);
+  activeSites = signal<number>(0);
   
-  // Analytics data
-  verifiedThisWeek: number = 18;
-  verificationRate: number = 92;
-  avgVerificationTime: number = 4;
-  
-  // API URLs
-  apiUrl: string = '';
-  imgUrl: string = '';
+  // Analytics data (from API)
+  verifiedThisWeek = signal<number>(0);
+  verificationRate = signal<number>(0);
+  avgVerificationTime = signal<number>(0);
 
-  // Mobile calendar - last 7 days
-  last7Days: CalendarDay[] = [];
+  // Mobile calendar - last 7 days (from API)
+  last7Days = signal<CalendarDay[]>([]);
 
-  // Recent gigs
-  recentGigs: Gig[] = [
-    {
-      id: 1,
-      workerName: 'John Mwangi',
-      siteName: 'Westlands Construction',
-      jobType: 'Plumbing',
-      date: 'Jan 11, 2026',
-      verified: true
-    },
-    {
-      id: 2,
-      workerName: 'Mary Njeri',
-      siteName: 'Kilimani Apartments',
-      jobType: 'Electrical',
-      date: 'Jan 10, 2026',
-      verified: false
-    },
-    {
-      id: 3,
-      workerName: 'Peter Omondi',
-      siteName: 'Karen Residential',
-      jobType: 'Carpentry',
-      date: 'Jan 10, 2026',
-      verified: true
-    },
-    {
-      id: 4,
-      workerName: 'Jane Akinyi',
-      siteName: 'Westlands Construction',
-      jobType: 'Painting',
-      date: 'Jan 9, 2026',
-      verified: true
-    }
-  ];
+  // Recent gigs (from API)
+  recentGigs = signal<Gig[]>([]);
 
-  // Weekly chart data
-  weeklyData: WeeklyData[] = [
-    { day: 'Mon', gigs: 4 },
-    { day: 'Tue', gigs: 6 },
-    { day: 'Wed', gigs: 5 },
-    { day: 'Thu', gigs: 8 },
-    { day: 'Fri', gigs: 7 },
-    { day: 'Sat', gigs: 3 },
-    { day: 'Sun', gigs: 2 }
-  ];
+  // Weekly chart data (from API)
+  weeklyData = signal<WeeklyData[]>([]);
+  maxWeeklyGigs = signal<number>(0);
 
-  maxWeeklyGigs: number = 8;
+  // Top sites (from API)
+  topSites = signal<Site[]>([]);
 
-  // Top sites
-  topSites: Site[] = [
-    { id: 1, name: 'Westlands Construction', workers: 8, gigs: 45, completion: 75 },
-    { id: 2, name: 'Kilimani Apartments', workers: 5, gigs: 32, completion: 60 },
-    { id: 3, name: 'Karen Residential', workers: 4, gigs: 28, completion: 85 }
-  ];
-
-  // Top workers
-  topWorkers: Worker[] = [
-    { id: 1, rank: 1, name: 'John Mwangi', avatar: '', gigs: 12, rating: 4.8 },
-    { id: 2, rank: 2, name: 'Mary Njeri', avatar: '', gigs: 10, rating: 4.7 },
-    { id: 3, rank: 3, name: 'Peter Omondi', avatar: '', gigs: 9, rating: 4.6 },
-    { id: 4, rank: 4, name: 'Jane Akinyi', avatar: '', gigs: 8, rating: 4.5 }
-  ];
+  // Top workers (from API)
+  topWorkers = signal<Worker[]>([]);
 
   constructor() {
     afterNextRender(() => {
@@ -174,85 +129,123 @@ export class JengaDash {
   private checkScreen(): void {
     this.isMobile.set(window.innerWidth < 992);
   }
-ngOnInit(): void {
-  this.appBar.setTitle('Jenga Pro');
-  this.appBar.setBack(false);
 
-  // Set actions
-  this.appBar.setActions([
-    {
-      id: 'account',
-      icon: 'account_circle',
-      ariaLabel: 'Account',
-      onClick: () => {
-        // Use requestAnimationFrame or a 0ms timeout to ensure 
-        // the menu opens after the click event cycle
-        setTimeout(() => this.accountMenuTrigger?.openMenu(), 0);
+  ngOnInit(): void {
+    this.appBar.setTitle('Jenga Pro');
+    this.appBar.setBack(false);
+
+    this.appBar.setActions([
+      {
+        id: 'account',
+        icon: 'account_circle',
+        ariaLabel: 'Account',
+        onClick: () => {
+          setTimeout(() => this.accountMenuTrigger?.openMenu(), 0);
+        },
       },
-    },
-  ]);
-
-  this.generateLast7Days();
-  
-  // Browser-only logic
-  if (isPlatformBrowser(this.platformId)) {
-    if (this.tokenService.isLoggedIn()) {
-      this.getLoggedInUser();
-      console.log('Fetching supervisor data...',this.imgFile);
-      this.fetchSupervisorData(); // Move inside the auth check
-    } else {
-      this.router.navigate(['/login']);
+    ]);
+    
+    // Browser-only logic
+    if (isPlatformBrowser(this.platformId)) {
+      if (this.tokenService.isLoggedIn()) {
+        this.loadDashboardData();
+      } else {
+        this.router.navigate(['/login']);
+      }
     }
   }
-}
 
-getLoggedInUser(): void { 
-    this.userService.getUserDetails().subscribe({
-      next: (data) => {
-        // Update signals instead of raw properties
-        this.username.set(data.username || '');
-        this.fullname.set(data.full_name || '');
-        this.email.set(data.email || '');
-        this.imgFile.set(`${environment.apiUrl}${data.profile_image ?? ''}`);
-        console.log('User data fetched:', data);
+  /**
+   * Load all dashboard data from API
+   */
+  private loadDashboardData(): void {
+    this.isLoading.set(true);
+
+    // Load all data in parallel using forkJoin
+    forkJoin({
+      userProfile: this.userService.getUserDetails(),
+      dashboardStats: this.userService.jengaStart(),
+      recentGigs: this.userService.recentGigs(),
+      topSites: this.userService.topSites(),
+      topWorkers: this.userService.topWorkers(),
+      calendar: this.userService.calendar()
+    }).subscribe({
+      next: (results) => {
+        console.log('Dashboard data loaded:', results);
+
+        // Set user data
+        this.username.set(results.userProfile.username || '');
+        this.fullname.set(results.userProfile.full_name || '');
+        this.email.set(results.userProfile.email || '');
+        
+        // Handle profile image
+        if (results.userProfile.profile_pic) {
+          this.imgFile.set(`${environment.apiUrl}${results.userProfile.profile_pic}`);
+        }
+
+        // Set dashboard stats
+        const stats = results.dashboardStats as DashboardStats;
+        this.totalGigs.set(stats.total_gigs);
+        this.unverifiedGigs.set(stats.unverified_gigs);
+        this.activeWorkers.set(stats.active_workers);
+        this.activeSites.set(stats.active_sites);
+        this.verifiedThisWeek.set(stats.verified_this_week);
+        this.verificationRate.set(stats.verification_rate);
+        this.avgVerificationTime.set(stats.avg_verification_time);
+
+        // Set recent gigs
+        this.recentGigs.set(results.recentGigs);
+
+        // Set top sites
+        this.topSites.set(results.topSites);
+
+        // Set top workers
+        this.topWorkers.set(results.topWorkers);
+
+        // Set calendar data
+        this.last7Days.set(results.calendar);
+
+        // Generate weekly chart data from calendar
+        this.generateWeeklyChart(results.calendar);
+
+        this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('Error fetching user profile', err);
+        console.error('Error loading dashboard data:', err);
+        this.isLoading.set(false);
+        
         if (err.status === 401) {
+          console.error('Unauthorized - redirecting to login');
           this.router.navigate(['/login']);
         }
       }
-    }); 
+    });
   }
 
-  // Generate last 7 days for mobile calendar
-  private generateLast7Days(): void {
-    const today = new Date();
-    const calendar: CalendarDay[] = [];
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  /**
+   * Generate weekly chart data from calendar response
+   */
+  private generateWeeklyChart(calendar: CalendarDay[]): void {
+    if (!calendar || calendar.length === 0) return;
+
+    const weeklyData = calendar.map(day => ({
+      day: day.dayName,
+      gigs: day.gigs,
+      date: day.date
+    }));
+
+    this.weeklyData.set(weeklyData);
     
-    // Mock gig counts for each day
-    const gigCounts = [2, 4, 3, 5, 6, 4, 0]; // Last 7 days
-    
-    for (let i = 6; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
-      
-      calendar.push({
-        date: date,
-        dayName: dayNames[date.getDay()],
-        dayNum: date.getDate(),
-        gigs: gigCounts[6 - i]
-      });
-    }
-    
-    this.last7Days = calendar;
+    // Calculate max for chart scaling
+    const maxGigs = Math.max(...weeklyData.map(d => d.gigs), 1);
+    this.maxWeeklyGigs.set(maxGigs);
   }
 
-  async fetchSupervisorData(): Promise<void> {
-    // TODO: Implement API calls
-    // const token = localStorage.getItem('access_token');
-    // Fetch user data and gigs from API
+  /**
+   * Refresh dashboard data
+   */
+  refreshDashboard(): void {
+    this.loadDashboardData();
   }
 
   navigate(route: string): void {
