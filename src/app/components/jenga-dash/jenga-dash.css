@@ -719,3 +719,60 @@
     }
   }
 }
+
+
+Jenga dash additional styles · CSS
+Copy
+
+/* Add these styles to your existing jenga-dash.css */
+
+/* View More Buttons */
+.view-more-btn {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 12px;
+}
+
+.view-more-btn:hover {
+  background: #f3f4f6;
+  border-color: #1976d2;
+}
+
+.view-more-btn i {
+  font-size: 20px;
+}
+
+.view-more-btn-desktop {
+  width: 100%;
+  padding: 12px 24px;
+  background: transparent;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  color: #1976d2;
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.view-more-btn-desktop:hover {
+  background: #f3f4f6;
+  border-color: #1976d2;
+}

@@ -4,7 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 import { MatMenuModule, MatMenuTrigger } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDividerModule } from '@angular/material/divider'; 
+import { MatDividerModule } from '@angular/material/divider';
 import { AppBarService } from '../../services/app-bar-service';
 import { UserService } from '../../services/user-service';
 import { TokenService } from '../../services/token-service';
@@ -106,18 +106,27 @@ export class JengaDash implements OnInit, OnDestroy {
   // Mobile calendar - last 7 days (from API)
   last7Days = signal<CalendarDay[]>([]);
 
-  // Recent gigs (from API)
+  // Recent gigs (from API) - WITH PAGINATION
+  private allRecentGigs = signal<Gig[]>([]);
   recentGigs = signal<Gig[]>([]);
+  showAllRecentGigs = signal<boolean>(false);
+  private readonly GIGS_LIMIT = 5;
 
   // Weekly chart data (from API)
   weeklyData = signal<WeeklyData[]>([]);
   maxWeeklyGigs = signal<number>(0);
 
-  // Top sites (from API)
+  // Top sites (from API) - WITH PAGINATION
+  private allTopSites = signal<Site[]>([]);
   topSites = signal<Site[]>([]);
+  showAllTopSites = signal<boolean>(false);
+  private readonly SITES_LIMIT = 5;
 
-  // Top workers (from API)
+  // Top workers (from API) - WITH PAGINATION
+  private allTopWorkers = signal<Worker[]>([]);
   topWorkers = signal<Worker[]>([]);
+  showAllTopWorkers = signal<boolean>(false);
+  private readonly WORKERS_LIMIT = 5;
 
   constructor() {
     afterNextRender(() => {
@@ -193,14 +202,17 @@ export class JengaDash implements OnInit, OnDestroy {
         this.verificationRate.set(stats.verification_rate);
         this.avgVerificationTime.set(stats.avg_verification_time);
 
-        // Set recent gigs
-        this.recentGigs.set(results.recentGigs);
+        // Set recent gigs with pagination
+        this.allRecentGigs.set(results.recentGigs);
+        this.updateRecentGigsDisplay();
 
-        // Set top sites
-        this.topSites.set(results.topSites);
+        // Set top sites with pagination
+        this.allTopSites.set(results.topSites);
+        this.updateTopSitesDisplay();
 
-        // Set top workers
-        this.topWorkers.set(results.topWorkers);
+        // Set top workers with pagination
+        this.allTopWorkers.set(results.topWorkers);
+        this.updateTopWorkersDisplay();
 
         // Set calendar data
         this.last7Days.set(results.calendar);
@@ -220,6 +232,87 @@ export class JengaDash implements OnInit, OnDestroy {
         }
       }
     });
+  }
+
+  /**
+   * Update recent gigs display based on show all state
+   */
+  private updateRecentGigsDisplay(): void {
+    const allGigs = this.allRecentGigs();
+    if (this.showAllRecentGigs()) {
+      this.recentGigs.set(allGigs);
+    } else {
+      this.recentGigs.set(allGigs.slice(0, this.GIGS_LIMIT));
+    }
+  }
+
+  /**
+   * Toggle show all recent gigs
+   */
+  toggleRecentGigs(): void {
+    this.showAllRecentGigs.set(!this.showAllRecentGigs());
+    this.updateRecentGigsDisplay();
+  }
+
+  /**
+   * Update top sites display based on show all state
+   */
+  private updateTopSitesDisplay(): void {
+    const allSites = this.allTopSites();
+    if (this.showAllTopSites()) {
+      this.topSites.set(allSites);
+    } else {
+      this.topSites.set(allSites.slice(0, this.SITES_LIMIT));
+    }
+  }
+
+  /**
+   * Toggle show all top sites
+   */
+  toggleTopSites(): void {
+    this.showAllTopSites.set(!this.showAllTopSites());
+    this.updateTopSitesDisplay();
+  }
+
+  /**
+   * Update top workers display based on show all state
+   */
+  private updateTopWorkersDisplay(): void {
+    const allWorkers = this.allTopWorkers();
+    if (this.showAllTopWorkers()) {
+      this.topWorkers.set(allWorkers);
+    } else {
+      this.topWorkers.set(allWorkers.slice(0, this.WORKERS_LIMIT));
+    }
+  }
+
+  /**
+   * Toggle show all top workers
+   */
+  toggleTopWorkers(): void {
+    this.showAllTopWorkers.set(!this.showAllTopWorkers());
+    this.updateTopWorkersDisplay();
+  }
+
+  /**
+   * Check if there are more recent gigs to show
+   */
+  hasMoreRecentGigs(): boolean {
+    return this.allRecentGigs().length > this.GIGS_LIMIT;
+  }
+
+  /**
+   * Check if there are more top sites to show
+   */
+  hasMoreTopSites(): boolean {
+    return this.allTopSites().length > this.SITES_LIMIT;
+  }
+
+  /**
+   * Check if there are more top workers to show
+   */
+  hasMoreTopWorkers(): boolean {
+    return this.allTopWorkers().length > this.WORKERS_LIMIT;
   }
 
   /**

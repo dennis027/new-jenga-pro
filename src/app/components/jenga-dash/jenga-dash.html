@@ -202,6 +202,12 @@
                 </div>
               </div>
             }
+            @if (hasMoreRecentGigs()) {
+              <button class="view-more-btn-desktop" (click)="toggleRecentGigs()">
+                {{ showAllRecentGigs() ? 'Show Less' : 'View More' }}
+                <i class="material-icons">{{ showAllRecentGigs() ? 'expand_less' : 'expand_more' }}</i>
+              </button>
+            }
           }
         </div>
       </div>
@@ -282,6 +288,12 @@
                 </div>
               </div>
             }
+            @if (hasMoreTopSites()) {
+              <button class="view-more-btn-desktop" (click)="toggleTopSites()">
+                {{ showAllTopSites() ? 'Show Less' : 'View More' }}
+                <i class="material-icons">{{ showAllTopSites() ? 'expand_less' : 'expand_more' }}</i>
+              </button>
+            }
           }
         </div>
       </div>
@@ -310,6 +322,12 @@
                   <span>{{ worker.rating }}</span>
                 </div>
               </div>
+            }
+            @if (hasMoreTopWorkers()) {
+              <button class="view-more-btn-desktop" (click)="toggleTopWorkers()">
+                {{ showAllTopWorkers() ? 'Show Less' : 'View More' }}
+                <i class="material-icons">{{ showAllTopWorkers() ? 'expand_less' : 'expand_more' }}</i>
+              </button>
             }
           }
         </div>
