@@ -7,7 +7,7 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class MpesaService {
-  private baseUrl = environment.apiUrl+'/api/'; // change if needed
+  private baseUrl = environment.apiUrl+'api/'; // change if needed
 
   constructor(private http: HttpClient) {}
 
