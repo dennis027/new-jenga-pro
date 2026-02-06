@@ -1,0 +1,689 @@
+/* ---------- ROOT VARIABLES ---------- */
+:root {
+  --primary: #1565C0;
+  --primary-light: #E3F2FD;
+  --bg: #f4f6f8;
+  --card-bg: #ffffff;
+  --text-dark: #1f2933;
+  --text-muted: #6b7280;
+  --success: #2e7d32;
+  --shadow: 0 4px 12px rgba(0,0,0,0.06);
+  --radius: 14px;
+}
+
+/* ---------- BASE ---------- */
+* {
+  box-sizing: border-box;
+}
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* ---------- LOADING STATE ---------- */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 1rem;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e5e7eb;
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-container p {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* ---------- MOBILE STYLES ---------- */
+@media (max-width: 991px) {
+  .page {
+    background: #f5f5f5;
+    min-height: 100vh;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+
+  /* Summary Card */
+  .summary-card h3 {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .summary-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+  }
+
+  .summary-item .label {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .summary-item .value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-dark);
+  }
+
+  /* Comparison Card */
+  .comparison-card h3 {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .comparison-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .comparison-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+  }
+
+  .comparison-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .comparison-label i {
+    font-size: 20px;
+    color: var(--text-muted);
+  }
+
+  .comparison-label span {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-dark);
+  }
+
+  .comparison-value {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .comparison-value.positive {
+    color: #16a34a;
+  }
+
+  .comparison-value.negative {
+    color: #dc2626;
+  }
+
+  .comparison-value.neutral {
+    color: var(--text-muted);
+  }
+
+  /* Performers Card */
+  .performers-card h3 {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .performer-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+
+  .performer-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .performer-item i {
+    font-size: 32px;
+    color: var(--primary);
+  }
+
+  .performer-item .performer-label {
+    margin: 0 0 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .performer-item .performer-value {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .performer-badge {
+    margin-left: auto;
+    background: #e3f2fd;
+    color: var(--primary);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* List Card */
+  .list-card {
+    padding: 16px;
+  }
+
+  .section-header {
+    margin-bottom: 12px;
+  }
+
+  .section-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .empty-state-mobile {
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+
+  .empty-state-mobile i {
+    font-size: 48px;
+    color: #d1d5db;
+    margin-bottom: 0.5rem;
+  }
+
+  .empty-state-mobile p {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin: 0;
+  }
+
+  /* Workers List Mobile */
+  .workers-list-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .worker-item-mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+  }
+
+  .worker-info-mobile h4 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .worker-info-mobile p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .worker-earnings {
+    text-align: right;
+  }
+
+  .worker-earnings .earnings {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--success);
+  }
+
+  /* Job Types List Mobile */
+  .job-types-list-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .job-type-item-mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+  }
+
+  .job-type-info h4 {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .job-type-info p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .job-type-revenue .revenue {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  /* Chart Card */
+  .chart-card h3 {
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .mobile-chart {
+    padding: 16px 0;
+  }
+
+  .chart-bars-mobile {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 4px;
+    height: 120px;
+    padding: 0 4px;
+  }
+
+  .bar-container-mobile {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: 100%;
+  }
+
+  .bar-mobile {
+    width: 100%;
+    background: linear-gradient(to top, var(--primary), #42a5f5);
+    border-radius: 4px 4px 0 0;
+    min-height: 4px;
+    transition: all 0.3s;
+  }
+
+  .bar-count {
+    margin-top: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+}
+
+/* ---------- DESKTOP STYLES ---------- */
+@media (min-width: 992px) {
+  .desktop-header {
+    margin-bottom: 32px;
+  }
+
+  .desktop-header h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-dark);
+  }
+
+  .desktop-header p {
+    margin: 8px 0 0;
+    font-size: 16px;
+    color: var(--text-muted);
+  }
+
+  /* Stats Grid */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stat-icon i {
+    font-size: 24px;
+    color: white;
+  }
+
+  .stat-icon.bg-blue { background: #3b82f6; }
+  .stat-icon.bg-green { background: #10b981; }
+  .stat-icon.bg-purple { background: #8b5cf6; }
+  .stat-icon.bg-orange { background: #f97316; }
+
+  .stat-card h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+
+  .stat-value {
+    margin: 8px 0 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-dark);
+  }
+
+  .stat-subtitle {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .stat-change {
+    margin: 8px 0 0;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .stat-change.positive { color: #16a34a; }
+  .stat-change.negative { color: #dc2626; }
+  .stat-change.neutral { color: var(--text-muted); }
+
+  .stat-change i {
+    font-size: 16px;
+  }
+
+  /* Desktop Grid */
+  .desktop-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .desktop-card {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .card-header {
+    padding: 24px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .card-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-dark);
+  }
+
+  .card-header .subtitle {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* Chart Section */
+  .chart-content {
+    padding: 24px;
+    min-height: 300px;
+  }
+
+  .chart-bars-desktop {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+    height: 250px;
+  }
+
+  .bar-container-desktop {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+  }
+
+  .bar-wrapper {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .bar-desktop {
+    width: 100%;
+    max-width: 40px;
+    background: linear-gradient(to top, var(--primary), #42a5f5);
+    border-radius: 6px 6px 0 0;
+    min-height: 4px;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+
+  .bar-desktop:hover {
+    opacity: 0.8;
+  }
+
+  .bar-label-desktop {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+  }
+
+  .bar-value-desktop {
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  /* Performers Content */
+  .performers-content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .performer-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: #f9fafb;
+    border-radius: 12px;
+  }
+
+  .performer-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .performer-icon i {
+    font-size: 28px;
+    color: white;
+  }
+
+  .performer-details {
+    flex: 1;
+  }
+
+  .performer-title {
+    margin: 0 0 4px;
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .performer-details h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+
+  .performer-stat {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* Bottom Grid */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  /* Table */
+  .table-container {
+    padding: 24px;
+  }
+
+  .analytics-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .analytics-table thead {
+    background: #f9fafb;
+  }
+
+  .analytics-table th {
+    padding: 12px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .analytics-table td {
+    padding: 16px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+    color: var(--text-dark);
+  }
+
+  .analytics-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .analytics-table tbody tr:hover {
+    background: #f9fafb;
+  }
+
+  .worker-name,
+  .job-type-name {
+    font-weight: 500;
+  }
+
+  .rate-badge {
+    background: #e3f2fd;
+    color: var(--primary);
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .earnings-cell {
+    font-weight: 700;
+    color: var(--success);
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+
+  .empty-state i {
+    font-size: 64px;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+  }
+
+  .empty-state p {
+    color: var(--text-muted);
+    margin: 0;
+  }
+}
