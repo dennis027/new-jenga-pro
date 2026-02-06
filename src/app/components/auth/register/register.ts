@@ -47,7 +47,7 @@ export class Register {
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirm_password: ['', Validators.required],
-      account_type: ['01', Validators.required],
+      account_type: ['02', Validators.required],
     },
     { validators: this.passwordsMatch }
   );
