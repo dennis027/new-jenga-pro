@@ -12,6 +12,8 @@ import { AppBarService } from '../../services/app-bar-service';
 import { GigServices } from '../../services/gig-services';
 import { Router } from '@angular/router';
 import { TokenService } from '../../services/token-service';
+import { SharedImports } from '../../shared-imports/imports';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface Gig {
   id: number;
@@ -29,7 +31,7 @@ interface Gig {
 @Component({
   selector: 'app-verify-gigs',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SharedImports],
   templateUrl: './verify-gigs.html',
   styleUrls: ['./verify-gigs.css'],
 })
@@ -44,6 +46,27 @@ export class VerifyGigs implements OnInit, OnDestroy {
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
   private tokenService = inject(TokenService);
+  private snackBar = inject(MatSnackBar);
+
+
+  private showSuccess(message: string) {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      panelClass: ['success-snackbar'],
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+    });
+  }
+
+  private showError(message: string) {
+    this.snackBar.open(message, 'Close', {
+      duration: 4000,
+      panelClass: ['error-snackbar'],
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+    });
+  }
+
 
   private isBrowser: boolean;
   private resizeHandler = () => this.checkScreen();
@@ -100,14 +123,16 @@ ngOnInit(): void {
         this.unverifiedGigs.set(
           this.unverifiedGigs().filter(gig => gig.id !== gigId)
         );
+         this.showSuccess('Gig Verified successfully!');
       },
       error: (err) => {
         console.error('Error verifying gig', err);
         if (err.status === 401) {
           this.router.navigate(['/login']);
         } else if (err.status !== 0) {
-          alert('Failed to verify gig. Please try again.');
+          this.showError('Check Your network connection.');
         }
+        this.showError('Failed to verify gig. Please try again.');
       }
     });
   }

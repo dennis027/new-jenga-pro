@@ -23,6 +23,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatListModule } from '@angular/material/list';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 // ✅ Export all of them in a single array
@@ -52,5 +53,6 @@ export const SharedImports = [
   MatListModule,
   MatTabsModule,
   MatSlideToggleModule,
+  
 
 ];

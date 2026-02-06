@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AppBarService } from '../../services/app-bar-service';
 import { MpesaService } from '../../services/mpesa-service';
 import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface MpesaTransaction {
   id: number;
@@ -27,6 +28,26 @@ export class MpesaPayments implements OnInit, OnDestroy {
   private mpesaService = inject(MpesaService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private snackBar = inject(MatSnackBar);
+
+  private showSuccess(message: string) {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      panelClass: ['success-snackbar'],
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+    });
+  }
+
+  private showError(message: string) {
+    this.snackBar.open(message, 'Close', {
+      duration: 4000,
+      panelClass: ['error-snackbar'],
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+    });
+  }
+
 
   mpesaMessages: MpesaTransaction[] = [];
   filteredMessages: MpesaTransaction[] = [];
@@ -170,13 +191,13 @@ export class MpesaPayments implements OnInit, OnDestroy {
     this.mpesaService.stkPush(data).subscribe({
       next: (response) => {
         console.log('STK Push initiated successfully:', response);
-        alert('STK Push initiated. Please check your phone to complete the payment.');
+        this.showSuccess('STK Push initiated. Please check your phone to complete the payment.');
         this.closePaymentDialog();
         this.fetchMpesaMessages();
       },
       error: (err) => {
         console.error('Error initiating STK Push:', err);
-        alert('Failed to initiate STK Push. Please try again.');
+        this.showError('Failed to initiate STK Push. Please try again.');
       }
     }); 
   }

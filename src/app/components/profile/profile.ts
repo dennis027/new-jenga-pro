@@ -7,6 +7,7 @@ import { TokenService } from '../../services/token-service';
 import { UserService } from '../../services/user-service';
 import regionsData from '../../../assets/JSON-Files/regions.json';
 import {environment} from '../../../environments/environment';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface County {
   county_code: number;
@@ -33,8 +34,28 @@ export class Profile implements OnInit {
   private tokenService = inject(TokenService);
   private router = inject(Router);
   private fb = inject(FormBuilder);
+  private snackBar = inject(MatSnackBar);
 
   profileForm!: FormGroup;
+
+  private showSuccess(message: string) {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      panelClass: ['success-snackbar'],
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+    });
+  }
+
+  private showError(message: string) {
+    this.snackBar.open(message, 'Close', {
+      duration: 4000,
+      panelClass: ['error-snackbar'],
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+    });
+  }
+
   
   // Using Signals for UI states
   isLoading = signal(true);
@@ -216,10 +237,16 @@ export class Profile implements OnInit {
     
         this.isSaving.set(false);
         this.router.navigate(['/main-menu']);
+          this.showSuccess('Profile updated successfully!');
       },
       error: (err) => {
         this.isSaving.set(false);
         console.error('Update failed', err);
+        if (err.status === 401) {
+          this.router.navigate(['/login']);
+        } else {
+          this.showError('Failed to update profile. Please try again.');
+        }
       }
     });
   }

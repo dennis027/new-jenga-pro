@@ -17,12 +17,13 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth';
 import { finalize } from 'rxjs';
 import { Router, RouterModule } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { SharedImports } from '../../../shared-imports/imports';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule],
+  imports: [ReactiveFormsModule, CommonModule, RouterModule,  MatSnackBarModule, SharedImports  ],
   templateUrl: './login.html',
   styleUrls: ['./login.css'],
 })
@@ -91,6 +92,11 @@ export class Login implements OnInit, OnDestroy {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: (res) => {
+          const accountType = res?.user?.account_type;
+          if (accountType !== '02') {
+              this.showError('This login is only allowed for Supervisor accounts.');
+              return;
+          }
           this.showSuccess('Logged in successfully!');
           this.router.navigate(['/main-menu']);
           this.cdr.detectChanges();

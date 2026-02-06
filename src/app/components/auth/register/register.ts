@@ -11,17 +11,19 @@ import {
   Validators,
   ReactiveFormsModule,
   AbstractControl,
+  
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../services/auth';
+import { SharedImports } from '../../../shared-imports/imports';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, RouterModule],
+  imports: [ReactiveFormsModule, CommonModule, RouterModule,SharedImports],
   templateUrl: './register.html',
   styleUrls: ['./register.css'],
 })
@@ -108,6 +110,7 @@ export class Register {
               from: 'register',
             },
           });
+           this.showSuccess('Logged in successfully!');
 
           this.cdr.detectChanges();
         },

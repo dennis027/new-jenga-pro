@@ -4,17 +4,32 @@
   style="display: none;">
 </button>
 
-<mat-menu #accountMenu="matMenu" xPosition="before">
-  <button mat-menu-item (click)="navigate('/main-menu/profile')">
-    <mat-icon>person</mat-icon>
-    <span>Manage Account</span>
-  </button>
-  <mat-divider></mat-divider>
-  <button mat-menu-item (click)="logout()">
-    <mat-icon>logout</mat-icon>
-    <span>Logout</span>
-  </button>
-</mat-menu>
+
+
+<div class="parent-container">
+  <div class="title">Dashboard</div>
+
+  <div class="acc-btn">
+    <button mat-icon-button [matMenuTriggerFor]="accountMenu">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+
+    <mat-menu #accountMenu="matMenu">
+      <button mat-menu-item (click)="navigate('/main-menu/profile')">
+        <mat-icon>person</mat-icon>
+        <span>Manage Account</span>
+      </button>
+
+      <mat-divider></mat-divider>
+
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </mat-menu>
+  </div>
+</div>
+
 
 <div class="page">
   

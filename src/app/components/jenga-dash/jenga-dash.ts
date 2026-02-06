@@ -10,6 +10,7 @@ import { UserService } from '../../services/user-service';
 import { TokenService } from '../../services/token-service';
 import { environment } from '../../../environments/environment';
 import { forkJoin } from 'rxjs';
+import { SharedImports } from '../../shared-imports/imports';
 
 interface Gig {
   id: number;
@@ -69,7 +70,8 @@ interface DashboardStats {
     MatMenuModule,
     MatIconModule,
     MatButtonModule,
-    MatDividerModule
+    MatDividerModule,
+    SharedImports
   ],
   templateUrl: './jenga-dash.html',
   styleUrl: './jenga-dash.css',

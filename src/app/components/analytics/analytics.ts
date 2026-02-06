@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { AnalyticsService } from '../../services/analytics-service';
 import { AppBarService } from '../../services/app-bar-service';
 import { forkJoin } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface SummaryStats {
   all_time: {
@@ -90,6 +91,26 @@ export class Analytics implements OnInit {
   private appBar = inject(AppBarService);
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
+  private snackBar = inject(MatSnackBar);
+
+  private showSuccess(message: string) {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      panelClass: ['success-snackbar'],
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+    });
+  }
+
+  private showError(message: string) {
+    this.snackBar.open(message, 'Close', {
+      duration: 4000,
+      panelClass: ['error-snackbar'],
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+    });
+  }
+
 
   isMobile = signal(false);
   isLoading = signal(true);
@@ -166,6 +187,8 @@ export class Analytics implements OnInit {
         this.comparativeData.set(results.comparative);
 
         this.isLoading.set(false);
+
+        this.showSuccess('Analytics data loaded successfully!');
       },
       error: (err) => {
         console.error('Error loading analytics:', err);
@@ -174,6 +197,8 @@ export class Analytics implements OnInit {
         if (err.status === 401) {
           this.router.navigate(['/login']);
         }
+
+        this.showError('Failed to load analytics data. Please try again.');
       }
     });
   }

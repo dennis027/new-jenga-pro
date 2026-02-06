@@ -5,6 +5,7 @@ import { SitesService } from '../../services/sites-service';
 import { AppBarService } from '../../services/app-bar-service';
 import regionsData from '../../../assets/JSON-Files/regions.json';
 import { Router } from '@angular/router';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface Site {
   id?: number;
@@ -42,7 +43,27 @@ export class AddSites {
   private appBar = inject(AppBarService);
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
-  private cdr = inject(ChangeDetectorRef); // Injected to fix NG0100
+  private cdr = inject(ChangeDetectorRef); 
+  private snackBar = inject(MatSnackBar);
+
+  private showSuccess(message: string) {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      panelClass: ['success-snackbar'],
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+    });
+  }
+
+  private showError(message: string) {
+    this.snackBar.open(message, 'Close', {
+      duration: 4000,
+      panelClass: ['error-snackbar'],
+      horizontalPosition: 'right',
+      verticalPosition: 'top',
+    });
+  }
+
 
   sites: Site[] = [];
   loading = true;
@@ -117,6 +138,8 @@ export class AddSites {
           this.error = 'Failed to load sites. Please try again.';
         }
         this.cdr.detectChanges();
+
+        this.showError(this.error);
       }
     });
   }
@@ -202,6 +225,7 @@ export class AddSites {
         this.saving = false;
         this.closeDialog();
         this.loadSites();
+        this.showSuccess(`Site ${this.dialogMode === 'add' ? 'added' : 'updated'} successfully!`);
       },
       error: (err) => {
         console.error('Error saving site:', err);
